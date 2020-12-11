@@ -1,7 +1,8 @@
 from cassowary import SimplexSolver, Variable, STRONG
-import random
+from random import sample, randint, choice
 
 class Field:
+    # a[row][col]
     def __init__(self, i, j, is_mine=False):
         # variable is binary value which is true if here is mine
         self.variable = Variable('a[' + str(i) + '][' + str(j) + ']')
@@ -14,35 +15,80 @@ class Field:
 
 
 class Board:
-    def __init__(self, n, k):
+    def __init__(self, n, k=0):
+        """
+        Create board object with dimensions nxn and k mines inside
+        set at random locations
+        """
         self.solver = SimplexSolver()
         self.board_dim = n
-        self.num_mines = k
+        #self.num_mines = k
         self.marked = []
-        self.vars = [[Field(i, j) for i in range(0, n)] for j in range(0, n)]
+        self.vars = [[Field(j, i) for i in range(n)] for j in range(n)]
+
+        #for (x, y) in zip(sample(range(n), k), sample(range(n), k)):
+        #    self.vars[x][y].is_mine = True
+
         self.current_adjacent_fields = []
 
+    #TODO: delete later, just for testing
+    def set_mines(self, mines):
+        self.num_mines = len(mines)
+        for (row_index, col_index) in mines:
+            self.vars[row_index][col_index].is_mine = True
 
-    def _get_adjacent(self, row_index, col_index):
-        adjacent_mines = 0
+
+    def _get_adjacent_fields(self, row_index, col_index):
+        """
+        Get a list of adjacent fields around field specified with row_index and col_index
+        """
         adjacent_fields = []
         for i in range(max(0, row_index-1), min(self.board_dim, row_index+2)):
             for j in range(max(0, col_index-1), min(self.board_dim, col_index+2)):
                 if i != row_index or j != col_index:
                     adjacent_fields.append(self.vars[i][j])
-                    adjacent_mines += 1 if self.vars[i][j].is_mine else 0
-        return adjacent_mines, adjacent_fields
+        return adjacent_fields
+
+    def _get_adjacent_mines(self, row_index, col_index):
+        return sum(f.is_mine for f in self._get_adjacent_fields(row_index, col_index))
 
     def update(self):
+        """
+        For each field that is not marked with is_mine compute number of adjacent mines
+        """
         for (row_index, row) in enumerate(self.vars):
             for (col_index, field) in enumerate(row):
                 field = self.vars[row_index][col_index]
-                if field.variable.value == 0:
-                    field.adjacent_mines, _ = self._get_adjacent(row_index, col_index)
+                if not field.is_mine:
+                    field.adjacent_mines = self._get_adjacent_mines(row_index, col_index)
+
+    def open_field(self, field):
+        """
+        Open field and check.
+
+        If there is a bomb this function will raise Explosion and callee should handle that.
+        If opened field has no adjacent mines we will open new all of his covered adjacent
+        fields.
+        """
+        field.covered = False
+        print("otvaram {}: {}".format(field.variable, field.adjacent_mines))
+        if field.is_mine:
+            #TOOD: not a ValueError, raise Explosion or something
+            raise ValueError("Boom")
+        if field.adjacent_mines == 0:
+            for adjacent_field in self._get_adjacent_fields(field.row, field.column):
+                if adjacent_field.covered:
+                    self.open_field(adjacent_field)
+
 
     def make_constraint(self, row_index, col_index):
+        """
+        Compute equations for field (row_index, col_index)
+        """
 
-        adjacent_mines, adjacent_fields = self._get_adjacent(row_index, col_index)
+        adjacent_fields = self._get_adjacent_fields(row_index, col_index)
+        adjacent_mines = self._get_adjacent_mines(row_index, col_index)
+
         for field in adjacent_fields:
             if field not in self.current_adjacent_fields:
                 self.current_adjacent_fields.append(field)
@@ -51,17 +97,18 @@ class Board:
         for field in adjacent_fields:
             if field.covered:
                 constraint += field.variable
-     #   print(constraint == adjacent_mines)
+    #   print(constraint == adjacent_mines)
         return constraint == adjacent_mines
 
-    def open_random(self):
-        i = random.randint(0, self.board_dim - 1)
-        j = random.randint(0, self.board_dim - 1)
-        print("otvaram " + str(i) + " " + str(j))
-        self.vars[i][j].covered = False
-        if self.vars[i][j].is_mine:
-            print("You have opened a mine.")
-            exit(0)
+    def get_random_field(self):
+        #TODO: we should somehow sample list of safe fields
+        while True:
+            i = randint(0, self.board_dim - 1)
+            j = randint(0, self.board_dim - 1)
+
+            if self.vars[i][j].variable.value == 0:
+                break
+
         return self.vars[i][j]
 
     def solve(self):
@@ -69,11 +116,13 @@ class Board:
             for (col_index, var) in enumerate(row):
                 self.solver.add_constraint(self.vars[row_index][col_index].variable >= 0)
                 self.solver.add_constraint(self.vars[row_index][col_index].variable <= 1)
-        newly_opened = self.open_random()
+        # prefer corner here?
+        newly_opened = self.get_random_field()
+        self.open_field(newly_opened)
         visited = []
 
+        # second condition?
         while self.num_mines != len(self.marked) or len(visited) < 3:
-
             print(newly_opened.variable)
 
             self.solver.add_constraint(self.make_constraint(newly_opened.row, newly_opened.column))
@@ -84,7 +133,7 @@ class Board:
             found_mine = False
             for field in self.current_adjacent_fields:
                 if field.variable.value == 1:
-        #            print("oznacavam")
+                    print("oznacavam {}", field.variable)
                     field.marked_mine = True
                     found_mine = True
                     if field not in self.marked:
@@ -94,16 +143,12 @@ class Board:
                 elif field != newly_opened and field not in visited:
                     possible_fields.append(field)
 
-            if len(possible_fields) != 0:
-                newly_opened = random.choice(possible_fields)
+            if possible_fields:
+                newly_opened = choice(possible_fields)
+            else:
+                newly_opened = self.get_random_field()
 
-        #    if not found_mine or len(visited) < 2:
-        #        newly_opened = self.open_random()
-
-            newly_opened.covered = False
-            if newly_opened.is_mine:
-                print("You have opened a mine.")
-                exit(0)
+            self.open_field(newly_opened)
 
             print([[var.variable.value for var in row] for row in self.vars])
 
@@ -160,6 +205,13 @@ def main1():
 
     assert x[0].value == 1 and x[1].value == 0 and x[2].value == 1
 
+def test2():
+    b = Board(4)
+    b.set_mines([(0, 1), (1, 2)])
+    b.update()
+
+    b.open_field(b.vars[3][0])
+
 
 if __name__ == "__main__":
-    test1()
+    test2()
