@@ -76,9 +76,13 @@ class Board:
             #TOOD: not a ValueError, raise Explosion or something
             raise ValueError("Boom")
         if field.adjacent_mines == 0:
+            boundary_list = []
             for adjacent_field in self._get_adjacent_fields(field.row, field.column):
                 if adjacent_field.covered:
-                    self.open_field(adjacent_field)
+                    boundary_list += self.open_field(adjacent_field)
+            return boundary_list
+        else:
+            return [field]
 
 
     def make_constraint(self, row_index, col_index):
@@ -210,7 +214,7 @@ def test2():
     b.set_mines([(0, 1), (1, 2)])
     b.update()
 
-    b.open_field(b.vars[3][0])
+    [print(f.variable, f.adjacent_mines) for f in b.open_field(b.vars[3][0])]
 
 
 if __name__ == "__main__":
