@@ -101,7 +101,7 @@ class Board:
             for field in adjacent_fields:
                 if field.covered:
                     constraint += field.variable
-            print(constraint == adjacent_mines)
+        #    print(constraint == adjacent_mines)
             return constraint == adjacent_mines
 
     def get_random_field(self):
@@ -110,7 +110,7 @@ class Board:
             i = randint(0, self.board_dim - 1)
             j = randint(0, self.board_dim - 1)
 
-            if self.vars[i][j].variable.value == 0:
+            if self.vars[i][j].variable.value == 0 and self.vars[i][j].covered == True:
                 break
 
         return self.vars[i][j]
@@ -143,10 +143,10 @@ class Board:
                     field.marked_mine = True
                     if field not in self.marked:
                         self.marked.append(field)
-                if field.variable.value == 0 and field in self.marked:
-                    self.marked.remove(field)
                 elif field != newly_opened and field not in visited:
                     possible_fields.append(field)
+                if field.variable.value == 0 and field in self.marked:
+                    self.marked.remove(field)
 
             if possible_fields:
                 newly_opened = choice(possible_fields)
@@ -154,11 +154,14 @@ class Board:
                 newly_opened = self.get_random_field()
 
             opened = self.open_field(newly_opened)
-            visited += opened
-            # kako bi uzeli nekog koji nije okružen nulama, napraviti pametnije?
-            newly_opened = visited[-1]
+            for field in opened:
+                if field not in visited:
+                    visited.append(field)
 
-            print([[var.variable.value for var in row] for row in self.vars])
+            if len(opened) != 0:
+                newly_opened = choice(opened)
+
+          #  print([[var.variable.value for var in row] for row in self.vars])
 
 
 def test1():
@@ -215,8 +218,8 @@ def main1():
 
 
 def test2():
-    b = Board(4, 2)
-    b.set_mines([(0, 1), (1, 2)])
+    b = Board(4, 3)
+    b.set_mines([(0, 1), (1, 2), (2, 2)])
     b.update()
 
     [print(f.variable, f.adjacent_mines) for f in b.open_field(b.vars[3][0])]
