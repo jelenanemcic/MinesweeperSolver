@@ -26,6 +26,7 @@ class Board:
         self.num_mines = k
         self.marked = []
         self.vars = [[Field(j, i) for i in range(n)] for j in range(n)]
+        self.closed = n*n
 
         # for (x, y) in zip(sample(range(n), k), sample(range(n), k)):
         #    self.vars[x][y].is_mine = True
@@ -70,8 +71,13 @@ class Board:
         If opened field has no adjacent mines we will open new all of his covered adjacent
         fields.
         """
+        if field.covered:
+            self.closed -= 1
         field.covered = False
+        if field in self.current_adjacent_fields:
+            self.current_adjacent_fields.remove(field)
         print("otvaram {}: {}".format(field.variable, field.adjacent_mines))
+
         if field.is_mine:
             # TODO: not a ValueError, raise Explosion or something
             raise ValueError("Boom")
@@ -101,16 +107,17 @@ class Board:
             for field in adjacent_fields:
                 if field.covered:
                     constraint += field.variable
-        #    print(constraint == adjacent_mines)
+            #    print(constraint == adjacent_mines)
             return constraint == adjacent_mines
 
     def get_random_field(self):
         # TODO: we should somehow sample list of safe fields
         while True:
+            if self.closed == self.num_mines:
+                return None
             i = randint(0, self.board_dim - 1)
             j = randint(0, self.board_dim - 1)
-
-            if self.vars[i][j].variable.value == 0 and self.vars[i][j].covered == True:
+            if self.vars[i][j].variable.value == 0 and self.vars[i][j].covered:
                 break
 
         return self.vars[i][j]
@@ -125,9 +132,10 @@ class Board:
         newly_opened = self.get_random_field()
         self.open_field(newly_opened)
         visited = []
-        num_of_clear_fields = self.board_dim * self.board_dim - self.num_mines
-
-        while self.num_mines != len(self.marked) or len(visited) != num_of_clear_fields:
+        
+        while self.num_mines != len(self.marked) or self.closed != self.num_mines:
+            print(len(self.marked))
+            print(len(visited))
             print(newly_opened.variable)
 
             constraint = self.make_constraint(newly_opened.row, newly_opened.column)
@@ -143,7 +151,7 @@ class Board:
                     field.marked_mine = True
                     if field not in self.marked:
                         self.marked.append(field)
-                elif field != newly_opened and field not in visited:
+                elif field != newly_opened and field not in visited and field.covered:
                     possible_fields.append(field)
                 if field.variable.value == 0 and field in self.marked:
                     self.marked.remove(field)
@@ -153,15 +161,15 @@ class Board:
             else:
                 newly_opened = self.get_random_field()
 
-            opened = self.open_field(newly_opened)
-            for field in opened:
-                if field not in visited:
-                    visited.append(field)
+            if newly_opened is not None:
+                opened = self.open_field(newly_opened)
+                for field in opened:
+                    if field not in visited:
+                        visited.append(field)
 
-            if len(opened) != 0:
-                newly_opened = choice(opened)
-
-          #  print([[var.variable.value for var in row] for row in self.vars])
+                if len(opened) != 0:
+                    newly_opened = choice(opened)
+        #  print([[var.variable.value for var in row] for row in self.vars])
 
 
 def test1():
@@ -222,7 +230,7 @@ def test2():
     b.set_mines([(0, 1), (1, 2), (2, 2)])
     b.update()
 
-    [print(f.variable, f.adjacent_mines) for f in b.open_field(b.vars[3][0])]
+ #   [print(f.variable, f.adjacent_mines) for f in b.open_field(b.vars[3][0])]
     b.solve()
     print([[var.variable.value for var in row] for row in b.vars])
 
