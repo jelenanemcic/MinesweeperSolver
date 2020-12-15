@@ -67,13 +67,15 @@ class Board:
         """
         Open field and check.
 
+        Opened field is removed from current_adjacent_fields list.
         If there is a bomb this function will raise Explosion and callee should handle that.
         If opened field has no adjacent mines we will open new all of his covered adjacent
         fields.
         """
-        if field.covered:
-            self.closed -= 1
+        assert field.covered
+        self.closed -= 1
         field.covered = False
+
         if field in self.current_adjacent_fields:
             self.current_adjacent_fields.remove(field)
         print("otvaram {}: {}".format(field.variable, field.adjacent_mines))
@@ -81,6 +83,20 @@ class Board:
         if field.is_mine:
             # TODO: not a ValueError, raise Explosion or something
             raise ValueError("Boom")
+
+        # this case is really interesing, we are opening a field that is safe but solver
+        # thinks that is is mined. We need to edit and enforce as stay constraint
+        if field.variable.value != 0:
+            field.variable.value = 0
+            self.solver.add_stay(field.variable)
+
+        # if any of these fields are marked as dangerous we should delete now because
+        # they are obviously not dangerous
+        if field in self.marked:
+            field.marked_mine = False
+            self.marked.remove(field)
+            print("Remove mark on field {}".format(field.variable))
+
         if field.adjacent_mines == 0:
             boundary_list = []
             for adjacent_field in self._get_adjacent_fields(field.row, field.column):
@@ -98,23 +114,23 @@ class Board:
         adjacent_fields = self._get_adjacent_fields(row_index, col_index)
         adjacent_mines = self._get_adjacent_mines(row_index, col_index)
 
-        if adjacent_mines != 0:
-            for field in adjacent_fields:
-                if field not in self.current_adjacent_fields:
-                    self.current_adjacent_fields.append(field)
+        assert adjacent_mines
+        for field in adjacent_fields:
+            if field not in self.current_adjacent_fields:
+                self.current_adjacent_fields.append(field)
 
-            constraint = 0
-            for field in adjacent_fields:
-                if field.covered:
-                    constraint += field.variable
-            #    print(constraint == adjacent_mines)
-            return constraint == adjacent_mines
+        # ?
+        # adjacent_mines == sum(f.variable for f in adjacent_fields if f.closed)
+        constraint = 0
+        for field in adjacent_fields:
+            if field.covered:
+                constraint += field.variable
+        #    print(constraint == adjacent_mines)
+        return constraint == adjacent_mines
 
     def get_random_field(self):
         # TODO: we should somehow sample list of safe fields
         while True:
-            if self.closed == self.num_mines:
-                return None
             i = randint(0, self.board_dim - 1)
             j = randint(0, self.board_dim - 1)
             if self.vars[i][j].variable.value == 0 and self.vars[i][j].covered:
@@ -122,27 +138,24 @@ class Board:
 
         return self.vars[i][j]
 
-    def solve(self):
+    def solve(self, first_field=None):
         for (row_index, row) in enumerate(self.vars):
             for (col_index, var) in enumerate(row):
                 self.solver.add_constraint(self.vars[row_index][col_index].variable >= 0)
                 self.solver.add_constraint(self.vars[row_index][col_index].variable <= 1)
 
         # prefer corner here?
-        newly_opened = self.get_random_field()
-        self.open_field(newly_opened)
+        if first_field:
+            newly_opened = self.open_field(first_field)
+        else:
+            newly_opened = self.open_field(self.get_random_field())
         visited = []
-        
-        while self.num_mines != len(self.marked) or self.closed != self.num_mines:
-            print(len(self.marked))
-            print(len(visited))
-            print(newly_opened.variable)
 
-            constraint = self.make_constraint(newly_opened.row, newly_opened.column)
-            if constraint is not None:
-                self.solver.add_constraint(constraint)
-            if newly_opened not in visited:
-                visited.append(newly_opened)
+        while self.closed != self.num_mines:
+            for new in newly_opened:
+                self.solver.add_constraint(self.make_constraint(new.row, new.column))
+                if new not in visited:
+                    visited.append(new)
 
             possible_fields = []
             for field in self.current_adjacent_fields:
@@ -150,25 +163,26 @@ class Board:
                     print("oznacavam {}", field.variable)
                     field.marked_mine = True
                     if field not in self.marked:
+                        print("Marking field {} as dangerous".format(field.variable))
                         self.marked.append(field)
-                elif field != newly_opened and field not in visited and field.covered:
+                elif field not in visited and field.covered:
+                    if field.is_mine:
+                        print("Pushing mined field {} in possible fields".format(field.variable))
                     possible_fields.append(field)
                 if field.variable.value == 0 and field in self.marked:
+                    print("Remove mark on field {}".format(field.variable))
                     self.marked.remove(field)
 
             if possible_fields:
-                newly_opened = choice(possible_fields)
+                new_field = choice(possible_fields)
             else:
-                newly_opened = self.get_random_field()
+                new_field = self.get_random_field()
 
-            if newly_opened is not None:
-                opened = self.open_field(newly_opened)
-                for field in opened:
-                    if field not in visited:
-                        visited.append(field)
+            newly_opened = self.open_field(new_field)
+            for field in newly_opened:
+                if field not in visited:
+                    visited.append(field)
 
-                if len(opened) != 0:
-                    newly_opened = choice(opened)
         #  print([[var.variable.value for var in row] for row in self.vars])
 
 
@@ -230,10 +244,32 @@ def test2():
     b.set_mines([(0, 1), (1, 2), (2, 2)])
     b.update()
 
- #   [print(f.variable, f.adjacent_mines) for f in b.open_field(b.vars[3][0])]
-    b.solve()
+
+    for row in b.vars:
+        print(" ".join([str(v.is_mine) for v in row]))
+
+    for row in b.vars:
+        print(" ".join([str(v.adjacent_mines) for v in row]))
+
+    b.solve(first_field=b.vars[3][0])
+    print([[var.variable.value for var in row] for row in b.vars])
+
+
+def test3():
+    # cool example that fails because CSP can infer the right thing
+    b = Board(4, 3)
+    b.set_mines([(0, 2), (0, 3), (3, 3)])
+    b.update()
+
+    for row in b.vars:
+        print(" ".join([str(v.is_mine) for v in row]))
+
+    for row in b.vars:
+        print(" ".join([str(v.adjacent_mines) for v in row]))
+
+    b.solve(first_field=b.vars[0][0])
     print([[var.variable.value for var in row] for row in b.vars])
 
 
 if __name__ == "__main__":
-    test2()
+    test3()
