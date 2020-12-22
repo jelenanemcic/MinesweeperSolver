@@ -1,20 +1,26 @@
 from cassowary import SimplexSolver, Variable
 from random import randint
 from strategy import CSP
-
+import tkinter as tk
+from tkinter import ttk
 
 class Field:
     # a[row][col]
-    def __init__(self, i, j, is_mine=False):
+    def __init__(self, i, j, board, is_mine=False):
         # variable is binary value which is true if here is mine
         self.variable = Variable('a[' + str(i) + '][' + str(j) + ']')
         self.row = i
         self.column = j
+        # we need to have a reference to the board in order to notify the event
+        self.board = board
         self.adjacent_mines = 0
         self.covered = True
         self.is_mine = is_mine
         self.marked_mine = False
-
+        self.button = ttk.Button(self.grid, text=" ")
+        self.button.grid(row=i, column=j)
+        self.button.bind('<ButtonPress-1>', lambda e: self.board._left_click(e))
+        self.button.bind('<ButtonPress-2>', lambda e: self.board._right_click(e))
 
 class Board:
     def __init__(self, n, k):
@@ -25,12 +31,63 @@ class Board:
         self.board_dim = n
         self.num_mines = k
         self.marked = []
-        self.vars = [[Field(j, i) for i in range(n)] for j in range(n)]
+        self.vars = [[Field(j, i, self) for i in range(n)] for j in range(n)]
         self.closed = n*n
         self.current_adjacent_fields = []
 
+        self.setup_gui()
+
         # for (x, y) in zip(sample(range(n), k), sample(range(n), k)):
         #    self.vars[x][y].is_mine = True
+
+    def _right_click(self, event):
+        grid_info = event.widget.grid_info()
+        column, row = grid_info["column"], grid_info["row"]
+
+        if self.vars[row][column].marked:
+            self.remove_mark_from_field(self.vars[row][column])
+        else:
+            self.mark_field(self.vars[row][column])
+
+    def _left_click(self, event):
+        grid_info = event.widget.grid_info()
+        column, row = grid_info["column"], grid_info["row"]
+
+        if self.vars[row][column].covered:
+            self.open_field(self.vars[row][column])
+
+    def setup_gui(self):
+        self.root = tk.Tk()
+        self.root.title("Minesweeper solver")
+
+        # create 2x3 grid for root frame
+        [self.root.rowconfigure(r, weight=1) for r in range(2)]
+        [self.root.columnconfigure(c, weight=1) for c in range(3)]
+
+        keys = ("mines", "alive", "opened")
+        self.labelvars = {k: tk.StringVar() for k in keys}
+
+        self.labels["mines"] = ttk.Label(self.root, text="Mines: " + str(board.num_mines))
+        self.labels["mines"].grid(row=0, column=0)
+
+        self.labelvars["alive"].set("Alive")
+        self.labels["alive"] = ttk.Label(self.root, textvariable=self.labelvars["alive"])
+        self.labels["alive"].grid(row=0, column=1)
+
+        self.labelvars["opened"].set("0")
+        self.labels["opened"] = ttk.Label(self.root, text="Opened: 0")
+        self.labels["opened"].grid(row=0, column=2)
+
+        # create a frame for minesweeper button grid
+        self.grid = ttk.Frame(self.root)
+        self.grid.grid(row=1, column=0, rowspan=1, columnspan=self.board_dim)
+
+        for x in range(self.board_dim);
+            for y in range(self.board_dim):
+                b = ttk.Button(self.grid, text=" ")
+                b.grid(row=x, column=y)
+                b.bind('<ButtonPress-1>', self._left_click)
+                b.bind('<ButtonPress-2>', self._right_click)
 
     # TODO: delete later, just for testing
     def set_mines(self, mines):
@@ -72,6 +129,16 @@ class Board:
 
         return self.vars[i][j]
 
+    def mark_field(self, field):
+        if field not in self.marked:
+            self.marked.append(field)
+
+    def remove_mark_from_field(self, field):
+        if field in self.marked:
+            self.marked.remove(field)
+            field.marked = False
+            print("Remove mark on field {}".format(field.variable))
+
     def open_field(self, field):
         """
         Open field and check.
@@ -95,10 +162,7 @@ class Board:
 
         # if any of these fields are marked as dangerous we should delete now because
         # they are obviously not dangerous
-        if field in self.marked:
-            field.marked_mine = False
-            self.marked.remove(field)
-            print("Remove mark on field {}".format(field.variable))
+        self.remove_mark_from_field(field)
 
     def run_strategy(self, strategy, first_field=None):
         strategy.solve(first_field)
@@ -185,8 +249,7 @@ def test3():
     for row in b.vars:
         print(" ".join([str(v.adjacent_mines) for v in row]))
 
-  #  b.solve(first_field=b.vars[0][0])
-    b.run_strategy(CSP(b))
+    #b.run_strategy(CSP(b))
     print([[var.variable.value for var in row] for row in b.vars])
 
 
