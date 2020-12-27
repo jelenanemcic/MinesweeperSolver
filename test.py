@@ -1,13 +1,10 @@
 from cassowary import SimplexSolver, Variable
-from random import randint
 from strategy import CSP
 
 
 class Field:
     # a[row][col]
     def __init__(self, i, j, is_mine=False):
-        # variable is binary value which is true if here is mine
-        self.variable = Variable('a[' + str(i) + '][' + str(j) + ']')
         self.row = i
         self.column = j
         self.adjacent_mines = 0
@@ -15,8 +12,11 @@ class Field:
         self.is_mine = is_mine
         self.marked_mine = False
 
+    def __repr__(self):
+        return "[{}][{}]: {}".format(self.row, self.column, self.adjacent_mines)
 
-class Board:
+
+class Minesweeper:
     def __init__(self, n, k):
         """
         Create board object with dimensions nxn and k mines inside
@@ -25,9 +25,8 @@ class Board:
         self.board_dim = n
         self.num_mines = k
         self.marked = []
-        self.vars = [[Field(j, i) for i in range(n)] for j in range(n)]
+        self.board = [[Field(j, i) for i in range(n)] for j in range(n)]
         self.closed = n*n
-        self.current_adjacent_fields = []
 
         # for (x, y) in zip(sample(range(n), k), sample(range(n), k)):
         #    self.vars[x][y].is_mine = True
@@ -36,7 +35,7 @@ class Board:
     def set_mines(self, mines):
         self.num_mines = len(mines)
         for (row_index, col_index) in mines:
-            self.vars[row_index][col_index].is_mine = True
+            self.board[row_index][col_index].is_mine = True
 
     def get_adjacent_fields(self, row_index, col_index):
         """
@@ -46,7 +45,7 @@ class Board:
         for i in range(max(0, row_index - 1), min(self.board_dim, row_index + 2)):
             for j in range(max(0, col_index - 1), min(self.board_dim, col_index + 2)):
                 if i != row_index or j != col_index:
-                    adjacent_fields.append(self.vars[i][j])
+                    adjacent_fields.append(self.board[i][j])
         return adjacent_fields
 
     def get_adjacent_mines(self, row_index, col_index):
@@ -56,49 +55,56 @@ class Board:
         """
         For each field that is not marked with is_mine compute number of adjacent mines
         """
-        for (row_index, row) in enumerate(self.vars):
+        for (row_index, row) in enumerate(self.board):
             for (col_index, field) in enumerate(row):
-                field = self.vars[row_index][col_index]
+                field = self.board[row_index][col_index]
                 if not field.is_mine:
                     field.adjacent_mines = self.get_adjacent_mines(row_index, col_index)
 
-    def get_random_field(self):
-        # TODO: we should somehow sample list of safe fields
-        while True:
-            i = randint(0, self.board_dim - 1)
-            j = randint(0, self.board_dim - 1)
-            if self.vars[i][j].variable.value == 0 and self.vars[i][j].covered:
-                break
+    def mark_field_dangerours(self, field):
+        if field not in self.marked:
+            field.marked_mine = True
+            self.marked.append(field)
+            print("Mark field {}".format(field))
 
-        return self.vars[i][j]
+    def mark_field_safe(self, field):
+        if field in self.marked:
+            field.marked_mine = False
+            self.marked.remove(field)
+            print("Remove mark on field {}".format(field))
 
     def open_field(self, field):
         """
         Open field and check.
 
-        Opened field is removed from current_adjacent_fields list.
         If there is a bomb this function will raise Explosion and callee should handle that.
         If opened field has no adjacent mines we will open new all of his covered adjacent
         fields.
+
+        Returns list of newly opened fields
         """
         assert field.covered
         self.closed -= 1
         field.covered = False
 
-        if field in self.current_adjacent_fields:
-            self.current_adjacent_fields.remove(field)
-        print("otvaram {}: {}".format(field.variable, field.adjacent_mines))
+        print("Opening {}".format(field))
 
         if field.is_mine:
             # TODO: not a ValueError, raise Explosion or something
             raise ValueError("Boom")
 
         # if any of these fields are marked as dangerous we should delete now because
-        # they are obviously not dangerous
-        if field in self.marked:
-            field.marked_mine = False
-            self.marked.remove(field)
-            print("Remove mark on field {}".format(field.variable))
+        # they are obviously not dangerous and mark as safe
+        self.mark_field_safe(field)
+
+        if field.adjacent_mines == 0:
+            opened_fields = []
+            for adjacent_field in self.get_adjacent_fields(field.row, field.column):
+                if adjacent_field.covered:
+                    opened_fields += self.open_field(adjacent_field)
+            return opened_fields
+        else:
+            return [field]
 
     def run_strategy(self, strategy, first_field=None):
         strategy.solve(first_field)
@@ -170,7 +176,7 @@ def test2():
 
     b.run_strategy(CSP(b))
  #   b.solve(first_field=b.vars[3][0])
-    print([[var.variable.value for var in row] for row in b.vars])
+    #print([[var.variable.value for var in row] for row in b.vars])
 
 
 def test3():
