@@ -2,10 +2,10 @@ import math
 
 class Field:
     # a[row][col]
-    def __init__(self, i, j, is_mine=False):
+    def __init__(self, i, j, board_dim, is_mine=False):
         self.row = i
         self.column = j
-        self.id = int(4 * i + j + 1)
+        self.id = int(board_dim * i + j + 1)
         self.adjacent_mines = 0
         self.covered = True
         self.is_mine = is_mine
@@ -24,14 +24,14 @@ class Minesweeper:
         self.board_dim = n
         self.num_mines = k
         self.marked = []
-        self.board = [[Field(j, i) for i in range(n)] for j in range(n)]
+        self.board = [[Field(j, i, self.board_dim) for i in range(n)] for j in range(n)]
         self.closed = n * n
 
         # for (x, y) in zip(sample(range(n), k), sample(range(n), k)):
         #    self.vars[x][y].is_mine = True
 
     def get_field_by_id(self, id):
-        return self.board[math.floor((id - 1) / 4)][(id - 1) % 4]
+        return self.board[math.floor((id - 1) / self.board_dim)][(id - 1) % self.board_dim]
 
     # TODO: delete later, just for testing
     def set_mines(self, mines):
