@@ -1,5 +1,5 @@
 from test import Minesweeper
-from strategy import CSP
+from strategy import CSP, SAT
 
 if __name__ == "__main__":
     b = Minesweeper(4, 3)
@@ -14,3 +14,4 @@ if __name__ == "__main__":
 
     b.root.mainloop()
     b.run_strategy(CSP(b), first_field=[3, 0])
+    b.run_strategy(SAT(b), first_field=[3, 0])
