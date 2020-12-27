@@ -1,12 +1,11 @@
-from cassowary import SimplexSolver, Variable
-from strategy import CSP
-
+import math
 
 class Field:
     # a[row][col]
-    def __init__(self, i, j, is_mine=False):
+    def __init__(self, i, j, board_dim, is_mine=False):
         self.row = i
         self.column = j
+        self.id = int(board_dim * i + j + 1)
         self.adjacent_mines = 0
         self.covered = True
         self.is_mine = is_mine
@@ -25,11 +24,14 @@ class Minesweeper:
         self.board_dim = n
         self.num_mines = k
         self.marked = []
-        self.board = [[Field(j, i) for i in range(n)] for j in range(n)]
-        self.closed = n*n
+        self.board = [[Field(j, i, self.board_dim) for i in range(n)] for j in range(n)]
+        self.closed = n * n
 
         # for (x, y) in zip(sample(range(n), k), sample(range(n), k)):
         #    self.vars[x][y].is_mine = True
+
+    def get_field_by_id(self, id):
+        return self.board[math.floor((id - 1) / self.board_dim)][(id - 1) % self.board_dim]
 
     # TODO: delete later, just for testing
     def set_mines(self, mines):
@@ -61,7 +63,7 @@ class Minesweeper:
                 if not field.is_mine:
                     field.adjacent_mines = self.get_adjacent_mines(row_index, col_index)
 
-    def mark_field_dangerours(self, field):
+    def mark_field_dangerous(self, field):
         if field not in self.marked:
             field.marked_mine = True
             self.marked.append(field)
@@ -98,7 +100,7 @@ class Minesweeper:
         self.mark_field_safe(field)
 
         if field.adjacent_mines == 0:
-            opened_fields = []
+            opened_fields = [field]
             for adjacent_field in self.get_adjacent_fields(field.row, field.column):
                 if adjacent_field.covered:
                     opened_fields += self.open_field(adjacent_field)
@@ -110,39 +112,7 @@ class Minesweeper:
         strategy.solve(first_field)
 
 
-def test1():
-    b = Board(3, 3)
-
-    # Mine se nalaze na poljima označenim s X
-    # 0 X 0
-    # X 0 X
-    # 0 X 0
-
-    #   b.vars[0][1].is_mine = True
-    b.vars[1][0].is_mine = True
-    b.vars[1][2].is_mine = True
-    b.vars[2][1].is_mine = True
-
-    #  b.update()
-    # print(b.vars)
-
-    # Vrijednosti trebeaju biti
-    # 2 X 2
-    # X 4 X
-    # 2 X 2
-    #    assert b.vars[0][0].adjacent_mines == 2
-    #    assert b.vars[0][2].adjacent_mines == 2
-    #    assert b.vars[1][1].adjacent_mines == 4
-    #    assert b.vars[2][0].adjacent_mines == 2
-    #    assert b.vars[2][2].adjacent_mines == 2
-
-    # sva polja su zatvorena osim:
-    # b.vars[0][0].covered = False
-    # b.vars[0][2].covered = False
-
-   # b.solve()
-
-
+""" 
 def main1():
     # minesweeper problem:
     # ? ? ?
@@ -198,3 +168,4 @@ def test3():
 
 if __name__ == "__main__":
     test2()
+"""

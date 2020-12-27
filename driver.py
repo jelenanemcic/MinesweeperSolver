@@ -1,5 +1,5 @@
 from test import Minesweeper
-from strategy import CSP
+from strategy import CSP, SAT
 
 if __name__ == "__main__":
     b = Minesweeper(4, 3)
@@ -12,4 +12,5 @@ if __name__ == "__main__":
     for row in b.board:
         print(" ".join([str(v.adjacent_mines) for v in row]))
 
-    b.run_strategy(CSP(b), first_field=[3, 0])
+  #  b.run_strategy(CSP(b), first_field=[3, 0])
+    b.run_strategy(SAT(b), first_field=[3, 0])
