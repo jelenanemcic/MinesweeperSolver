@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from random import randrange
 import math
 from strategy import CSP, SAT
 
@@ -36,8 +37,6 @@ class Minesweeper:
 
         self.setup_gui()
 
-        # for (x, y) in zip(sample(range(n), k), sample(range(n), k)):
-        #    self.vars[x][y].is_mine = True
 
     def get_field_by_id(self, id):
         return self.board[math.floor((id - 1) / self.board_dim)][(id - 1) % self.board_dim]
@@ -108,11 +107,18 @@ class Minesweeper:
                 row_buttons.append(b)
             self.buttons.append(row_buttons)
 
-    # TODO: delete later, just for testing
-    def set_mines(self, mines):
-        self.num_mines = len(mines)
-        for (row_index, col_index) in mines:
-            self.board[row_index][col_index].is_mine = True
+    def set_mines(self, first_field):
+        """
+        Generate self.num_mines random tuples that represent mine positions
+        """
+        mines = 0
+        while mines < self.num_mines:
+            x, y = (randrange(0, self.board_dim), randrange(0, self.board_dim))
+
+            if first_field != (x, y):
+                mines += 1
+                self.board[x][y].is_mine = True
+        self._update();
 
     def num_closed(self):
         return self.board_dim ** 2 - self.opened
@@ -131,7 +137,7 @@ class Minesweeper:
     def get_adjacent_mines(self, row_index, col_index):
         return sum(f.is_mine for f in self.get_adjacent_fields(row_index, col_index))
 
-    def update(self):
+    def _update(self):
         """
         For each field that is not marked with is_mine compute number of adjacent mines
         """
@@ -194,7 +200,6 @@ class Minesweeper:
 
         self.labels["opened"].config(text="Opened: {}".format(self.opened))
         self.buttons[field.row][field.column].config(image=self.images["numbers"][field.adjacent_mines])
-        # state=tk.DISABLED)
 
         # check if all fields are opened
         if self.num_closed() == self.num_mines:
@@ -226,15 +231,23 @@ class Minesweeper:
         # disable SAT button if CSP is clicked
         SAT_button = event.widget.winfo_toplevel().nametowidget("strategy_grid.sat_button")
         SAT_button.config(state=tk.DISABLED)
+
         self.strategy = CSP(self)
-        self.strategy.first_step(first_field=[3, 0])
+        first_field = (0, 0)
+        self.set_mines(first_field)
+
+        self.strategy.first_step(first_field=first_field)
 
     def _run_SAT(self, event):
         # disable CSP button if SAT is clicked
         CSP_button = event.widget.winfo_toplevel().nametowidget("strategy_grid.csp_button")
         CSP_button.config(state=tk.DISABLED)
         self.strategy = SAT(self)
-        self.strategy.first_step(first_field=[3, 0])
+
+        first_field = (0, 0)
+        self.set_mines(first_field)
+
+        self.strategy.first_step(first_field=first_field)
 
     def _next_step(self, event):
         self.strategy.step()
@@ -249,69 +262,3 @@ class Minesweeper:
         self.strategy=None
 
         self.setup_gui()
-
-        # just for testing
-        self.set_mines([(0, 1), (1, 2), (2, 2)])
-        self.update()
-
-        # for (x, y) in zip(sample(range(n), k), sample(range(n), k)):
-        #    self.vars[x][y].is_mine = True
-
-
-"""
-def main1():
-    # minesweeper problem:
-    # ? ? ?
-    # 1 2 1
-    x = [Variable('x' + str(i)) for i in range(3)]
-    y = [Variable('y' + str(i), 1) for i in range(3)]
-
-    c1 = x[0] + x[1] == 1
-    c2 = x[0] + x[1] + x[2] == 2
-    c3 = x[1] + x[2] == 1
-
-    solver = SimplexSolver()
-
-    solver.add_constraint(c1)
-    solver.add_constraint(c2)
-    solver.add_constraint(c3)
-
-    assert x[0].value == 1 and x[1].value == 0 and x[2].value == 1
-
-
-def test2():
-    b = Board(4, 3)
-    b.set_mines([(0, 1), (1, 2), (2, 2)])
-    b.update()
-
-    for row in b.vars:
-        print(" ".join([str(v.is_mine) for v in row]))
-
-    for row in b.vars:
-        print(" ".join([str(v.adjacent_mines) for v in row]))
-
-    b.run_strategy(CSP(b))
- #   b.solve(first_field=b.vars[3][0])
-    #print([[var.variable.value for var in row] for row in b.vars])
-
-
-def test3():
-    # cool example that fails because CSP can infer the right thing
-    b = Board(4, 3)
-    b.set_mines([(0, 2), (0, 3), (3, 3)])
-    b.update()
-
-    for row in b.vars:
-        print(" ".join([str(v.is_mine) for v in row]))
-
-    for row in b.vars:
-        print(" ".join([str(v.adjacent_mines) for v in row]))
-
-  #  b.solve(first_field=b.vars[0][0])
-    b.run_strategy(CSP(b))
-    print([[var.variable.value for var in row] for row in b.vars])
-
-
-if __name__ == "__main__":
-    test2()
-"""
