@@ -1,7 +1,8 @@
-from cassowary import SimplexSolver, Variable
-from strategy import CSP
 import tkinter as tk
 from tkinter import ttk
+import math
+from strategy import CSP, SAT
+
 
 class Field:
     # a[row][col]
@@ -13,6 +14,7 @@ class Field:
         self.covered = True
         self.is_mine = is_mine
         self.marked_mine = False
+        self.strategy = None
 
     def __repr__(self):
         return "[{}][{}]: {}".format(self.row, self.column, self.adjacent_mines)
@@ -24,6 +26,7 @@ class Minesweeper:
         Create board object with dimensions nxn and k mines inside
         set at random locations
         """
+        self.labels = {}
         self.board_dim = n
         self.num_mines = k
         self.marked = []
@@ -60,10 +63,8 @@ class Minesweeper:
         self.root.title("Minesweeper solver")
 
         # create 2x3 grid for root frame
-        [self.root.rowconfigure(r, weight=1) for r in range(2)]
+        [self.root.rowconfigure(r, weight=1) for r in range(3)]
         [self.root.columnconfigure(c, weight=1) for c in range(3)]
-
-        self.labels = {}
 
         self.labels["mines"] = ttk.Label(self.root, text="Mines: {}".format(self.num_mines))
         self.labels["mines"].grid(row=0, column=0)
@@ -74,9 +75,22 @@ class Minesweeper:
         self.labels["opened"] = ttk.Label(self.root, text="Opened: 0")
         self.labels["opened"].grid(row=0, column=2)
 
+        self.strategy_grid = ttk.Frame(self.root)
+        self.strategy_grid.grid(row=1, column=0, rowspan=1, columnspan=3)
+
+        CSP_button = ttk.Button(self.strategy_grid, text="CSP Strategy")
+        CSP_button.grid(row=0, column=0)
+        CSP_button.bind('<ButtonPress-1>', self._run_CSP)
+        SAT_button = ttk.Button(self.strategy_grid, text="SAT Strategy")
+        SAT_button.grid(row=0, column=1)
+        SAT_button.bind('<ButtonPress-1>', self._run_SAT)
+        next_step = ttk.Button(self.strategy_grid, text="Next step")
+        next_step.grid(row=0, column=2)
+        next_step.bind('<ButtonPress-1>', self._next_step)
+
         # create a frame for minesweeper button grid
         self.grid = ttk.Frame(self.root)
-        self.grid.grid(row=1, column=0, rowspan=1, columnspan=self.board_dim)
+        self.grid.grid(row=2, column=0, rowspan=1, columnspan=self.board_dim)
 
         for x in range(self.board_dim):
             row_buttons = []
@@ -95,7 +109,7 @@ class Minesweeper:
             self.board[row_index][col_index].is_mine = True
 
     def num_closed(self):
-        return self.board_dim**2 - self.opened
+        return self.board_dim ** 2 - self.opened
 
     def get_adjacent_fields(self, row_index, col_index):
         """
@@ -135,7 +149,6 @@ class Minesweeper:
             print("Remove mark on field {}".format(field))
             self.buttons[field.row][field.column].config(text=" ")
 
-
     def open_field(self, field):
         """
         Open field and check.
@@ -154,16 +167,42 @@ class Minesweeper:
 
         if field.is_mine:
             # TODO: not a ValueError, raise Explosion or something
+            self.buttons[field.row][field.column].config(text="X")
+            print("Game over.")
+            popup = tk.Toplevel(self.root)
+            popup.wm_title("Lose")
+
+            l = tk.Label(popup, text="Game over")
+            l.grid(row=0, column=0, columnspan=2)
+
+            b1 = ttk.Button(popup, text="Exit", command=quit)
+            b1.grid(row=1, column=0)
+            b2 = ttk.Button(popup, text="Restart", command=lambda: self.restart())
+            b2.grid(row=1, column=1)
+
             raise ValueError("Boom")
 
-
         self.labels["opened"].config(text="Opened: {}".format(self.opened))
-        self.buttons[field.row][field.column].config(text=str(field.adjacent_mines),
-                                                     state=tk.DISABLED)
+        self.buttons[field.row][field.column].config(text=str(field.adjacent_mines))
+        # state=tk.DISABLED)
 
         # if any of these fields are marked as dangerous we should delete now because
         # they are obviously not dangerous and mark as safe
         self.mark_field_safe(field)
+
+        # check if all fields are opened
+        if self.num_closed() == self.num_mines:
+            print("Game solved.")
+            popup = tk.Toplevel(self.root)
+            popup.wm_title("Win")
+
+            l = tk.Label(popup, text="Game solved")
+            l.grid(row=0, column=0, columnspan=2)
+
+            b1 = ttk.Button(popup, text="Exit", command=quit)
+            b1.grid(row=1, column=0)
+            b2 = ttk.Button(popup, text="Restart", command=lambda: self.restart())
+            b2.grid(row=1, column=1)
 
         if field.adjacent_mines == 0:
             opened_fields = [field]
@@ -176,6 +215,34 @@ class Minesweeper:
 
     def run_strategy(self, strategy, first_field=None):
         strategy.solve(first_field)
+
+    def _run_CSP(self, event):
+        self.strategy = CSP(self)
+        self.strategy.first_step(first_field=[3, 0])
+
+    def _run_SAT(self, event):
+        self.strategy = SAT(self)
+        self.strategy.first_step(first_field=[3, 0])
+
+    def _next_step(self, event):
+        self.strategy.step()
+
+    def restart(self):
+        self.root.destroy()
+        self.labels = {}
+        self.marked = []
+        self.board = [[Field(j, i, self.board_dim) for i in range(self.board_dim)] for j in range(self.board_dim)]
+        self.buttons = []
+        self.opened = 0
+
+        self.setup_gui()
+
+        # just for testing
+        self.set_mines([(0, 1), (1, 2), (2, 2)])
+        self.update()
+
+        # for (x, y) in zip(sample(range(n), k), sample(range(n), k)):
+        #    self.vars[x][y].is_mine = True
 
 
 """ 

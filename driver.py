@@ -13,5 +13,5 @@ if __name__ == "__main__":
         print(" ".join([str(v.adjacent_mines) for v in row]))
 
     b.root.mainloop()
-    b.run_strategy(CSP(b), first_field=[3, 0])
-    b.run_strategy(SAT(b), first_field=[3, 0])
+ #   b.run_strategy(CSP(b), first_field=[3, 0])
+ #   b.run_strategy(SAT(b), first_field=[3, 0])
