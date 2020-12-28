@@ -14,7 +14,6 @@ class Field:
         self.covered = True
         self.is_mine = is_mine
         self.marked_mine = False
-        self.strategy = None
 
     def __repr__(self):
         return "[{}][{}]: {}".format(self.row, self.column, self.adjacent_mines)
@@ -33,6 +32,7 @@ class Minesweeper:
         self.board = [[Field(j, i, self.board_dim) for i in range(n)] for j in range(n)]
         self.buttons = []
         self.opened = 0
+        self.strategy = None
 
         self.setup_gui()
 
@@ -75,13 +75,13 @@ class Minesweeper:
         self.labels["opened"] = ttk.Label(self.root, text="Opened: 0")
         self.labels["opened"].grid(row=0, column=2)
 
-        self.strategy_grid = ttk.Frame(self.root)
+        self.strategy_grid = ttk.Frame(self.root, name="strategy_grid")
         self.strategy_grid.grid(row=1, column=0, rowspan=1, columnspan=3)
 
-        CSP_button = ttk.Button(self.strategy_grid, text="CSP Strategy")
+        CSP_button = ttk.Button(self.strategy_grid, name="csp_button", text="CSP Strategy")
         CSP_button.grid(row=0, column=0)
         CSP_button.bind('<ButtonPress-1>', self._run_CSP)
-        SAT_button = ttk.Button(self.strategy_grid, text="SAT Strategy")
+        SAT_button = ttk.Button(self.strategy_grid, name="sat_button", text="SAT Strategy")
         SAT_button.grid(row=0, column=1)
         SAT_button.bind('<ButtonPress-1>', self._run_SAT)
         next_step = ttk.Button(self.strategy_grid, text="Next step")
@@ -182,13 +182,13 @@ class Minesweeper:
 
             raise ValueError("Boom")
 
-        self.labels["opened"].config(text="Opened: {}".format(self.opened))
-        self.buttons[field.row][field.column].config(text=str(field.adjacent_mines))
-        # state=tk.DISABLED)
-
         # if any of these fields are marked as dangerous we should delete now because
         # they are obviously not dangerous and mark as safe
         self.mark_field_safe(field)
+
+        self.labels["opened"].config(text="Opened: {}".format(self.opened))
+        self.buttons[field.row][field.column].config(text=str(field.adjacent_mines))
+        # state=tk.DISABLED)
 
         # check if all fields are opened
         if self.num_closed() == self.num_mines:
@@ -217,10 +217,16 @@ class Minesweeper:
         strategy.solve(first_field)
 
     def _run_CSP(self, event):
+        # disable SAT button if CSP is clicked
+        SAT_button = event.widget.winfo_toplevel().nametowidget("strategy_grid.sat_button")
+        SAT_button.config(state=tk.DISABLED)
         self.strategy = CSP(self)
         self.strategy.first_step(first_field=[3, 0])
 
     def _run_SAT(self, event):
+        # disable CSP button if SAT is clicked
+        CSP_button = event.widget.winfo_toplevel().nametowidget("strategy_grid.csp_button")
+        CSP_button.config(state=tk.DISABLED)
         self.strategy = SAT(self)
         self.strategy.first_step(first_field=[3, 0])
 
