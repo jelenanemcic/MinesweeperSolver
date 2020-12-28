@@ -62,6 +62,12 @@ class Minesweeper:
         self.root = tk.Tk()
         self.root.title("Minesweeper solver")
 
+        self.images = {
+            "covered": tk.PhotoImage(file="images/covered.png").subsample(6, 6),
+            "marked": tk.PhotoImage(file="images/flagged.png").subsample(6, 6),
+            "numbers": [tk.PhotoImage(file="images/{}.png".format(i)).subsample(6, 6) for i in range(8+1)],
+        }
+
         # create 2x3 grid for root frame
         [self.root.rowconfigure(r, weight=1) for r in range(3)]
         [self.root.columnconfigure(c, weight=1) for c in range(3)]
@@ -95,7 +101,7 @@ class Minesweeper:
         for x in range(self.board_dim):
             row_buttons = []
             for y in range(self.board_dim):
-                b = ttk.Button(self.grid, text=" ")
+                b = ttk.Button(self.grid, width=2, image=self.images["covered"])
                 b.grid(row=x, column=y)
                 b.bind('<ButtonPress-1>', self._left_click)
                 b.bind('<ButtonPress-3>', self._right_click)
@@ -140,14 +146,14 @@ class Minesweeper:
             field.marked_mine = True
             self.marked.append(field)
             print("Mark field {}".format(field))
-            self.buttons[field.row][field.column].config(text="M")
+            self.buttons[field.row][field.column].config(image=self.images["marked"])
 
     def mark_field_safe(self, field):
         if field in self.marked:
             field.marked_mine = False
             self.marked.remove(field)
             print("Remove mark on field {}".format(field))
-            self.buttons[field.row][field.column].config(text=" ")
+            self.buttons[field.row][field.column].config(image=self.images["covered"])
 
     def open_field(self, field):
         """
@@ -187,7 +193,7 @@ class Minesweeper:
         self.mark_field_safe(field)
 
         self.labels["opened"].config(text="Opened: {}".format(self.opened))
-        self.buttons[field.row][field.column].config(text=str(field.adjacent_mines))
+        self.buttons[field.row][field.column].config(image=self.images["numbers"][field.adjacent_mines])
         # state=tk.DISABLED)
 
         # check if all fields are opened
@@ -240,6 +246,7 @@ class Minesweeper:
         self.board = [[Field(j, i, self.board_dim) for i in range(self.board_dim)] for j in range(self.board_dim)]
         self.buttons = []
         self.opened = 0
+        self.strategy=None
 
         self.setup_gui()
 
@@ -251,7 +258,7 @@ class Minesweeper:
         #    self.vars[x][y].is_mine = True
 
 
-""" 
+"""
 def main1():
     # minesweeper problem:
     # ? ? ?
