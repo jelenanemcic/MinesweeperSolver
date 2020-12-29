@@ -37,7 +37,6 @@ class Minesweeper:
 
         self.setup_gui()
 
-
     def get_field_by_id(self, id):
         return self.board[math.floor((id - 1) / self.board_dim)][(id - 1) % self.board_dim]
 
@@ -65,6 +64,7 @@ class Minesweeper:
             "covered": tk.PhotoImage(file="images/covered.png").subsample(6, 6),
             "marked": tk.PhotoImage(file="images/flagged.png").subsample(6, 6),
             "numbers": [tk.PhotoImage(file="images/{}.png".format(i)).subsample(6, 6) for i in range(8+1)],
+            "bomb": tk.PhotoImage(file="images/bomb.png").subsample(2, 2)
         }
 
         # create 2x3 grid for root frame
@@ -89,9 +89,10 @@ class Minesweeper:
         SAT_button = ttk.Button(self.strategy_grid, name="sat_button", text="SAT Strategy")
         SAT_button.grid(row=0, column=1)
         SAT_button.bind('<ButtonPress-1>', self._run_SAT)
-        next_step = ttk.Button(self.strategy_grid, text="Next step")
+        next_step = ttk.Button(self.strategy_grid, name="next_step", text="Next step")
         next_step.grid(row=0, column=2)
         next_step.bind('<ButtonPress-1>', self._next_step)
+        next_step.config(state=tk.DISABLED)
 
         # create a frame for minesweeper button grid
         self.grid = ttk.Frame(self.root)
@@ -104,6 +105,7 @@ class Minesweeper:
                 b.grid(row=x, column=y)
                 b.bind('<ButtonPress-1>', self._left_click)
                 b.bind('<ButtonPress-3>', self._right_click)
+                b.config(state=tk.DISABLED)
                 row_buttons.append(b)
             self.buttons.append(row_buttons)
 
@@ -118,7 +120,7 @@ class Minesweeper:
             if first_field != (x, y):
                 mines += 1
                 self.board[x][y].is_mine = True
-        self._update();
+        self._update()
 
     def num_closed(self):
         return self.board_dim ** 2 - self.opened
@@ -178,8 +180,9 @@ class Minesweeper:
         print("Opening {}".format(field))
 
         if field.is_mine:
-            # TODO: not a ValueError, raise Explosion or something
-            self.buttons[field.row][field.column].config(text="X")
+            self.buttons[field.row][field.column].config(image=self.images["bomb"])
+            self.labels["alive"].config(text="Dead")
+
             print("Game over.")
             popup = tk.Toplevel(self.root)
             popup.wm_title("Lose")
@@ -192,8 +195,6 @@ class Minesweeper:
             b2 = ttk.Button(popup, text="Restart", command=lambda: self.restart())
             b2.grid(row=1, column=1)
 
-            raise ValueError("Boom")
-
         # if any of these fields are marked as dangerous we should delete now because
         # they are obviously not dangerous and mark as safe
         self.mark_field_safe(field)
@@ -203,6 +204,13 @@ class Minesweeper:
 
         # check if all fields are opened
         if self.num_closed() == self.num_mines:
+
+            # mark all covered as bombs
+            for row in self.board:
+                for field in row:
+                    if field.covered:
+                        self.mark_field_dangerous(field)
+
             print("Game solved.")
             popup = tk.Toplevel(self.root)
             popup.wm_title("Win")
@@ -231,9 +239,10 @@ class Minesweeper:
         # disable SAT button if CSP is clicked
         SAT_button = event.widget.winfo_toplevel().nametowidget("strategy_grid.sat_button")
         SAT_button.config(state=tk.DISABLED)
+        self.enable_buttons(event)
 
         self.strategy = CSP(self)
-        first_field = (0, 0)
+        first_field = (randrange(0, self.board_dim), randrange(0, self.board_dim))
         self.set_mines(first_field)
 
         self.strategy.first_step(first_field=first_field)
@@ -242,15 +251,27 @@ class Minesweeper:
         # disable CSP button if SAT is clicked
         CSP_button = event.widget.winfo_toplevel().nametowidget("strategy_grid.csp_button")
         CSP_button.config(state=tk.DISABLED)
-        self.strategy = SAT(self)
+        self.enable_buttons(event)
 
-        first_field = (0, 0)
+        self.strategy = SAT(self)
+        first_field = (randrange(0, self.board_dim), randrange(0, self.board_dim))
         self.set_mines(first_field)
 
         self.strategy.first_step(first_field=first_field)
 
     def _next_step(self, event):
         self.strategy.step()
+
+    def enable_buttons(self, event):
+        """
+        Enables Next step button and all field buttons in the board.
+        """
+        next_step = event.widget.winfo_toplevel().nametowidget("strategy_grid.next_step")
+        next_step.config(state=tk.NORMAL)
+
+        for row in self.buttons:
+            for button in row:
+                button.config(state=tk.NORMAL)
 
     def restart(self):
         self.root.destroy()
@@ -259,6 +280,7 @@ class Minesweeper:
         self.board = [[Field(j, i, self.board_dim) for i in range(self.board_dim)] for j in range(self.board_dim)]
         self.buttons = []
         self.opened = 0
-        self.strategy=None
+        self.strategy = None
 
         self.setup_gui()
+

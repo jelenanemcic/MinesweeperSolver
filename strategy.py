@@ -30,12 +30,14 @@ class CSP(Strategy):
         self.solver = SimplexSolver()
         self.current_adjacent_fields = []
         self.newly_opened = []
-
         self.vars = [[Variable("a[{}][{}]".format(j, i)) for i in range(self.game.board_dim)]
                      for j in range(self.game.board_dim)]
 
+        self.solver.add_constraint(self.game.num_mines == sum(self.vars[i][j]
+                                                              for i in range(0, self.game.board_dim) for j in
+                                                              range(0, self.game.board_dim)))
+
     def get_random_field(self):
-        # TODO: we should somehow sample list of safe fields
         while True:
             i = randint(0, self.game.board_dim - 1)
             j = randint(0, self.game.board_dim - 1)
@@ -130,8 +132,11 @@ class SAT(Strategy):
         self.vars = [[0 for i in range(self.game.board_dim)]
                      for j in range(self.game.board_dim)]
 
+        self.solver.append_formula(
+            CardEnc.equals(lits=list(range(1, self.game.board_dim ** 2 + 1)), bound=self.game.num_mines,
+                           encoding=EncType.native))
+
     def get_random_field(self):
-        # TODO: we should somehow sample list of safe fields
         while True:
             i = randint(0, self.game.board_dim - 1)
             j = randint(0, self.game.board_dim - 1)
