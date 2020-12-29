@@ -195,42 +195,43 @@ class Minesweeper:
             b2 = ttk.Button(popup, text="Restart", command=lambda: self.restart())
             b2.grid(row=1, column=1)
 
-        # if any of these fields are marked as dangerous we should delete now because
-        # they are obviously not dangerous and mark as safe
-        self.mark_field_safe(field)
-
-        self.labels["opened"].config(text="Opened: {}".format(self.opened))
-        self.buttons[field.row][field.column].config(image=self.images["numbers"][field.adjacent_mines])
-
-        # check if all fields are opened
-        if self.num_closed() == self.num_mines:
-
-            # mark all covered as bombs
-            for row in self.board:
-                for field in row:
-                    if field.covered:
-                        self.mark_field_dangerous(field)
-
-            print("Game solved.")
-            popup = tk.Toplevel(self.root)
-            popup.wm_title("Win")
-
-            l = tk.Label(popup, text="Game solved")
-            l.grid(row=0, column=0, columnspan=2)
-
-            b1 = ttk.Button(popup, text="Exit", command=quit)
-            b1.grid(row=1, column=0)
-            b2 = ttk.Button(popup, text="Restart", command=lambda: self.restart())
-            b2.grid(row=1, column=1)
-
-        if field.adjacent_mines == 0:
-            opened_fields = [field]
-            for adjacent_field in self.get_adjacent_fields(field.row, field.column):
-                if adjacent_field.covered:
-                    opened_fields += self.open_field(adjacent_field)
-            return opened_fields
         else:
-            return [field]
+            # if any of these fields are marked as dangerous we should delete now because
+            # they are obviously not dangerous and mark as safe
+            self.mark_field_safe(field)
+
+            self.labels["opened"].config(text="Opened: {}".format(self.opened))
+            self.buttons[field.row][field.column].config(image=self.images["numbers"][field.adjacent_mines])
+
+            # check if all fields are opened
+            if self.num_closed() == self.num_mines:
+
+                # mark all covered as bombs
+                for row in self.board:
+                    for field in row:
+                        if field.covered:
+                            self.mark_field_dangerous(field)
+
+                print("Game solved.")
+                popup = tk.Toplevel(self.root)
+                popup.wm_title("Win")
+
+                l = tk.Label(popup, text="Game solved")
+                l.grid(row=0, column=0, columnspan=2)
+
+                b1 = ttk.Button(popup, text="Exit", command=quit)
+                b1.grid(row=1, column=0)
+                b2 = ttk.Button(popup, text="Restart", command=lambda: self.restart())
+                b2.grid(row=1, column=1)
+
+            if field.adjacent_mines == 0:
+                opened_fields = [field]
+                for adjacent_field in self.get_adjacent_fields(field.row, field.column):
+                    if adjacent_field.covered:
+                        opened_fields += self.open_field(adjacent_field)
+                return opened_fields
+            else:
+                return [field]
 
     def run_strategy(self, strategy, first_field=None):
         strategy.solve(first_field)
