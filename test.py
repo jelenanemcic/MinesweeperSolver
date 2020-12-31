@@ -224,7 +224,7 @@ class Minesweeper:
                 b2 = ttk.Button(popup, text="Restart", command=lambda: self.restart())
                 b2.grid(row=1, column=1)
 
-            if field.adjacent_mines == 0:
+            elif field.adjacent_mines == 0:
                 opened_fields = [field]
                 for adjacent_field in self.get_adjacent_fields(field.row, field.column):
                     if adjacent_field.covered:
@@ -232,6 +232,8 @@ class Minesweeper:
                 return opened_fields
             else:
                 return [field]
+
+        return [field]
 
     def run_strategy(self, strategy, first_field=None):
         strategy.solve(first_field)
