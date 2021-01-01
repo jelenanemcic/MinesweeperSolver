@@ -1,0 +1,65 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[croatian]{babel}
+\usepackage{placeins}
+\usepackage{mathptmx}
+\usepackage{amsmath}
+\usepackage{siunitx}
+\usepackage{graphicx}
+\usepackage[sorting=none]{biblatex}
+%\addbibresource{literatura.bib}
+
+\begin{document}
+
+\begin{titlepage}
+	\centering
+	{\scshape\LARGE Sveučilište u Zagrebu\par}
+	\vspace{0.5cm}
+	{\scshape\Large Fakultet elektrotehnike i računarstva\par}
+    \vfill
+	{\Large\itshape Projekt kolegija Ekspertni sustavi \par}
+	\vspace{0.5cm}
+	{\huge\bfseries Rješavanje i analiza rješavanja igrice Minesweeper\par}
+	\vspace{0.5cm}
+	{\Large\itshape Darko Janeković, Jelena Nemčić \par}
+	\vfill
+	{\large Zagreb, 2020.}
+\end{titlepage}
+
+\section{Uvod}
+
+Minesweeper je igra za jednog igrača koji se nalazi na polju koje sadrži skrivene mine. Igrač
+u jednom potezu može ili označiti polje kao da se tamo nalazi mina ili ga otvoriti. Ukoliko je
+polje označeno kao mina nije ga moguće otvoriti bez da se prethodno makne oznaka da se tamo
+nalazi mina. Takva akcija je korisna ukoliko igrač sa sigurnošću zna da se na nekom polju
+nalazi mina. S druge strane, igrač može otvoriti polje oko kojeg se ne nalazi niti jedna
+mina, oko kojeg se nalazi $n$ mina te konačno polje na kojem se nalazi mina.
+
+Otvaranje polja oko kojeg se ne nalazi niti jedna mina nastavit će rekurzivno otvarati susjedna
+polja sve dok se ne otvori neko polje koje u susjedstvu ima minu. Otvaranje polja oko kojeg
+se nalazi $n$ mina ispisat će na ploču brojku $n$. Igrač je izgubio ako je otvorio polje s minom, dok otvaranje zadnjeg polja koje nije mina
+označava pobjedu.
+
+U okviru ovog projekta bit će analizirane dvije taktike za rješavanje igrice Minesweeper.
+U nastavku će biti analizirane dvije taktike rješavanja igrice Minesweeper pri čemu obje
+taktike svode problem na  programiranje ograničenjima(engl. \textit{Constraint Programming}),
+ali se postupak rješavanja razlikuje.
+
+U prvom slučaju će se problem rješavati simplex metodom, dok će se u drugom slučaju isti
+problem rješavati i tretirati kao problem zadovoljivosti(engl. \textit{Satisfaction Problem}).
+Prednosti i nedostatci oba načina rješavanja bit će komentirani u nastavku.
+
+\section{Modeliranje problema}
+
+Moguće je pretpostaviti, bez gubitka općenitosti, da je ploča dimenzija $3 \times 3$ te da je
+svaka vrijednost na ploči $a_{i, j} \in \{\bot, \top\}$. Ukoliko je vrijednost pojedinog polja
+$\top$ tamo se ne nalazi mina, odnosno ako je vrijednost $\bot$ na tom polju se nalazi mina.
+Skup $N(a_{i, j})$ definira susjedstvo polja $a_{i, j}$, a s $n$ će biti označavan broj mina
+u svim susjednim poljima polja $a_{i, j}$.
+
+Nakon otvaranja polja $a_{i, j}$ agent u bazu znanja upisuje:
+\begin{equation}
+    \sum_{b \in N(a_{i, j})} b = n
+\end{equation}
+\end{document}
