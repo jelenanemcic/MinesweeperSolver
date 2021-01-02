@@ -99,15 +99,54 @@ jednoznačno rješiv nalazi se u tablici u nastavku:
     \end{tabular}
 \end{table}
 
-\begin{equation}
+\begin{equation*}
     m_{2, 1} + m_{2, 2} + m_{3, 2} = 1
-\end{equation}
+\end{equation*}
 
 S obzirom da agentu nije poznata nikakva druga informacija, agent na temelju ovog sustava ne
 može ništa zaključiti i mora pogađati.
 
-\subsubsection{Zaključivanje simplex metodom}
 \subsubsection{Zaključivanje rješavanjem 3-SAT problema}
+Prvi korak u zaključivanju rješavanje 3-SAT problema je svođenje problema u konjugiranu
+normalnu formu(u nastavku CNF).
+
+S obzirom da se oko polja $m_{2, 1}$ nalazi jedna mina prva klauzula će biti zadovoljena ako
+je barem jedan sused mina, druga klauzula će biti zadovoljena ako barem jedno polje nije mina.
+\begin{equation*}
+    (m_{1, 1} \vee m_{1, 2}) \wedge (\neg m_{1, 1} \vee \neg m_{1, 2})
+\end{equation*}
+
+Slično razmišljanje kao i ranije moguće je primijeniti za ostala polja:
+\begin{gather*}
+    (m_{1, 1} \vee m_{1, 2} \vee m_{1, 3}) \wedge
+        (\neg m_{1, 1} \vee \neg m_{1, 2}) \wedge
+        (\neg m_{1, 2} \vee \neg m_{1, 3}) \wedge
+        (\neg m_{1, 3} \vee \neg m_{1, 1}) \\
+    (m_{1, 2} \vee m_{1, 3}) \wedge (\neg m_{1, 2} \vee \neg m_{1, 3})
+\end{gather*}
+
+Jednom kad je baza znanja predstavljena u CNF zaključivanje se izvodi teoremom dedukcije.
+Primjerice, potrebno je zaključiti da se na polju $m_{2, 2}$ nalazi mina. Baza znanja $\Gamma$
+proširuje se s $\neg m_{2, 2}$ te je potrebno pokazati da je $(\Gamma \wedge \neg m_{2, 2})$
+nezadovoljiva.
+
+Ukoliko je formula zadovoljiva, agent može biti siguran da se tamo nalazi mina te proširiti
+bazu znanja s tom informacijom kao i označiti to polje kao opasno.
+
+
+\subsubsection{Zaključivanje simpleks metodom}
+Simpleks algoritam je metoda rješavanja problema u linearnom programiranju. Ovaj postupak se
+može tumačiti kao pohlepna inačica 3-SAT postupka.
+
+Ulaz u algoritam je niz nejednadžbi za koje je potrebno pronaći odgovarajuće nepoznanice
+tako da je svaka nejednadžba zadovoljena.
+
+%TODO: napiši kako smo napisali nejednadžbe
+
+Ovaj algoritam za razlučivanje se ne ponaša kao i 3-SAT i to je za očekivati. Glavna razlika
+između dva algoritma je da ukoliko 3-SAT algoritam nije siguran nalazi li se na nekom polju
+mina pretpostavit će da se mina tamo nalazi. S druge strane, simpleks metoda će slučajni odabirom odabrati polja gdje će se nalaziti mine. Iz ovog razloga je 3-SAT puno bolji za rješavanje
+ovog problema. Prednost simpleks algoritma nad 3-SAT algoritmom je u vremenskoj složenosti.
 
 \section{Implementacija}
 \section{Zaključak}
