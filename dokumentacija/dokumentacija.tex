@@ -5,6 +5,7 @@
 \usepackage{placeins}
 \usepackage{mathptmx}
 \usepackage{amsmath}
+\usepackage{amssymb}
 \usepackage{siunitx}
 \usepackage{graphicx}
 \usepackage[sorting=none]{biblatex}
@@ -53,13 +54,61 @@ Prednosti i nedostatci oba načina rješavanja bit će komentirani u nastavku.
 \section{Modeliranje problema}
 
 Moguće je pretpostaviti, bez gubitka općenitosti, da je ploča dimenzija $3 \times 3$ te da je
-svaka vrijednost na ploči $a_{i, j} \in \{\bot, \top\}$. Ukoliko je vrijednost pojedinog polja
+svaka vrijednost na ploči $m_{i, j} \in \{\bot, \top\}$. Ukoliko je vrijednost pojedinog polja
 $\top$ tamo se ne nalazi mina, odnosno ako je vrijednost $\bot$ na tom polju se nalazi mina.
-Skup $N(a_{i, j})$ definira susjedstvo polja $a_{i, j}$, a s $n$ će biti označavan broj mina
-u svim susjednim poljima polja $a_{i, j}$.
+Skup $\mathcal{N}(m_{i, j})$ definira susjedstvo polja $m_{i, j}$, a s $n$ će biti označavan broj mina
+u svim susjednim poljima polja $m_{i, j}$.
 
-Nakon otvaranja polja $a_{i, j}$ agent u bazu znanja upisuje:
+Nakon otvaranja polja $m_{i, j}$ agent u bazu znanja upisuje:
 \begin{equation}
-    \sum_{b \in N(a_{i, j})} b = n
+    \sum_{a \in \mathcal{N}(m_{i, j})} a = n
 \end{equation}
+
+\subsection{Zaključivanje}
+Zaključivanje korištenjem ranije definiranih pravila bit će objašnjeno u nastavku. Stanje
+svijeta prikazano je tablicom:
+
+\begin{table}[ht]
+    \centering
+    \begin{tabular}{llll}
+                           & 1                      & 2                      & 3                      \\ \cline{2-4}
+    \multicolumn{1}{l|}{1} & \multicolumn{1}{l|}{}  & \multicolumn{1}{l|}{}  & \multicolumn{1}{l|}{}  \\ \cline{2-4}
+    \multicolumn{1}{l|}{2} & \multicolumn{1}{l|}{1} & \multicolumn{1}{l|}{1} & \multicolumn{1}{l|}{1} \\ \cline{2-4}
+    \multicolumn{1}{l|}{3} & \multicolumn{1}{l|}{0} & \multicolumn{1}{l|}{0} & \multicolumn{1}{l|}{0}  \\ \cline{2-4}
+    \end{tabular}
+\end{table}
+
+\begin{align*}
+    m_{1, 1} + m_{1, 2} = 1 \\
+    m_{1, 1} + m_{1, 2} + m_{1, 3} = 1 \\
+    m_{1, 2} + m_{1, 3} = 1 \\
+\end{align*}
+
+Iz čega se lako može zaključiti da vrijedi $m_{1, 1} = \bot$, $m_{1, 2} = \top$ i
+$m_{1, 3} = \bot$. Drugim riječima jedina mina se nalazi na polju $m_{1, 2}$.
+
+S druge strane, zaključivanja mogu biti nejednoznačna. Primjer stanja svijeta koji nije
+jednoznačno rješiv nalazi se u tablici u nastavku:
+\begin{table}[ht]
+    \centering
+    \begin{tabular}{llll}
+                           & 1                      & 2                     & 3                     \\ \cline{2-4}
+    \multicolumn{1}{l|}{1} & \multicolumn{1}{l|}{}  & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{} \\ \cline{2-4}
+    \multicolumn{1}{l|}{2} & \multicolumn{1}{l|}{}  & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{} \\ \cline{2-4}
+    \multicolumn{1}{l|}{3} & \multicolumn{1}{l|}{1} & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{} \\ \cline{2-4}
+    \end{tabular}
+\end{table}
+
+\begin{equation}
+    m_{2, 1} + m_{2, 2} + m_{3, 2} = 1
+\end{equation}
+
+S obzirom da agentu nije poznata nikakva druga informacija, agent na temelju ovog sustava ne
+može ništa zaključiti i mora pogađati.
+
+\subsubsection{Zaključivanje simplex metodom}
+\subsubsection{Zaključivanje rješavanjem 3-SAT problema}
+
+\section{Implementacija}
+\section{Zaključak}
 \end{document}
