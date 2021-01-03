@@ -156,12 +156,16 @@ class Minesweeper:
             print("Mark field {}".format(field))
             self.buttons[field.row][field.column].config(image=self.images["marked"])
 
+            self.labels["mines"].config(text="Mines: {}".format(self.num_mines - len(self.marked)))
+
     def mark_field_safe(self, field):
         if field in self.marked:
             field.marked_mine = False
             self.marked.remove(field)
             print("Remove mark on field {}".format(field))
             self.buttons[field.row][field.column].config(image=self.images["covered"])
+
+            self.labels["mines"].config(text="Mines: {}".format(self.num_mines - len(self.marked)))
 
     def open_field(self, field):
         """
