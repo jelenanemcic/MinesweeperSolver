@@ -30,7 +30,7 @@
 
 \section{Uvod}
 
-Minesweeper je igra za jednog igrača koja se sastoji od ploče dimenzija $X x Y$. Neka od polja ploče sadrže skrivene mine, a igračev cilj je locirati sve mine i otvoriti sva preostala polja.
+Minesweeper je igra za jednog igrača koja se sastoji od ploče dimenzija $X \times Y$. Neka od polja ploče sadrže skrivene mine, a igračev cilj je locirati sve mine i otvoriti sva preostala polja.
 
 Igraču je u svakom trenutku igre poznato koliko je mina još na ploči. U svakom svom potezu igrač može:
 \begin{itemize}
@@ -83,16 +83,20 @@ svijeta prikazano je tablicom:
     \multicolumn{1}{l|}{2} & \multicolumn{1}{l|}{1} & \multicolumn{1}{l|}{1} & \multicolumn{1}{l|}{1} \\ \cline{2-4}
     \multicolumn{1}{l|}{3} & \multicolumn{1}{l|}{0} & \multicolumn{1}{l|}{0} & \multicolumn{1}{l|}{0}  \\ \cline{2-4}
     \end{tabular}
+    \label{table:state1}
+    \caption{Primjer stanja svijeta koje je jednoznačno odredivo}
 \end{table}
 
+Za stanje svijeta navedeno u tablici ranije moguće je zapisati jednadžbe:
 \begin{align*}
     m_{1, 1} + m_{1, 2} = 1 \\
     m_{1, 1} + m_{1, 2} + m_{1, 3} = 1 \\
     m_{1, 2} + m_{1, 3} = 1 \\
 \end{align*}
 
-Iz čega se lako može zaključiti da vrijedi $m_{1, 1} = \bot$, $m_{1, 2} = \top$ i
-$m_{1, 3} = \bot$. Drugim riječima jedina mina nalazi se na polju $m_{1, 2}$.
+Iz skupa jednadžbi se lako može zaključiti da vrijedi $m_{1, 1} = \bot$, $m_{1, 2} = \top$ i
+$m_{1, 3} = \bot$. Drugim riječima jedina mina nalazi se na polju $m_{1, 2}$, ostala polja su
+sigurna.
 
 S druge strane, zaključivanja mogu biti nejednoznačna. Primjer stanja svijeta koji nije
 jednoznačno rješiv nalazi se u tablici u nastavku:
@@ -104,11 +108,14 @@ jednoznačno rješiv nalazi se u tablici u nastavku:
     \multicolumn{1}{l|}{2} & \multicolumn{1}{l|}{}  & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{} \\ \cline{2-4}
     \multicolumn{1}{l|}{3} & \multicolumn{1}{l|}{1} & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{} \\ \cline{2-4}
     \end{tabular}
+    \label{table:state2}
+    \caption{Primjer stanja svijeta koje nije jednoznačno odredivo.}
 \end{table}
 
-\begin{equation*}
+\begin{equation}
     m_{2, 1} + m_{2, 2} + m_{3, 2} = 1
-\end{equation*}
+    \label{eq:state2}
+\end{equation}
 
 S obzirom da agentu nije poznata nikakva druga informacija, agent na temelju ovog sustava ne
 može ništa zaključiti i mora pogađati.
@@ -147,7 +154,7 @@ Na isti način, budući da je $(\Gamma \wedge m_{1, 1})$ nezadovoljiva formula, 
 Simpleks algoritam je metoda rješavanja problema u linearnom programiranju. Ovaj postupak može se
 tumačiti i kao pohlepna inačica SAT postupka.
 
-Ulaz u algoritam je niz jednadžbi i nejednadžbi i ciljna funkcija koju je potrebno minimizirati ili maksimizirani tako da su sve jednadžbe i nejednadžbe zadovoljene. U našem slučaju svi ulazi su jednadžbe budući da uvijek točno znamo koliko je mina u susjedstvu nekog polja. Također umjesto jedne ciljne funkcije imamo ograničenja da svaka varijabla može poprimiti samo vrijednosti 0 ili 1. Cilj nam je pronaći odgovarajuće vrijednosti svih varijabli tako da je sustav zadovoljiv. 
+Ulaz u algoritam je niz jednadžbi i nejednadžbi i ciljna funkcija koju je potrebno minimizirati ili maksimizirani tako da su sve jednadžbe i nejednadžbe zadovoljene. Također umjesto jedne ciljne funkcije ograničenja su postavljane na svaku varijablu tako da se njega vrijednost nalazi u skupu $[0, 1]$. Cilj je pronaći odgovarajuće vrijednosti svih varijabli tako da je sustav zadovoljiv.
 
 Jednadžbe se postavljaju kao u formuli \ref{eq:1}, odnosno za svako otvoreno polje piše se jednadžba koja nam govori da suma svih njegovih susjeda mora biti jednaka broju susjednih mina. Za primjer s početka poglavlja dobivamo jednadžbe:
 \begin{gather*}
@@ -157,7 +164,17 @@ Jednadžbe se postavljaju kao u formuli \ref{eq:1}, odnosno za svako otvoreno po
     m_{1, 2} + m_{1, 3} = 1
 \end{gather*}
 
-Sustav u simpleks metodi uvijek mora biti zadovoljiv, ako nije onda postoji greška u samoj ploči ili u zadavanju jednadžbi. Međutim, može se dogoditi da sustav u određenom trenutku nije jednoznačno zadovoljiv jer nam još nisu poznate sve informacije s ploče.
+Ovdje valja primijetiti zanimljivost, kako se ovaj algoritam nosi sa sustavom koji nije
+jednoznačan? Primjer takvog sustava predstavlja tablica \ref{table:state2}. Algoritam na ulazu
+dobiva jednadžbu \ref{eq:state2} i nejednadžbu koja kaže $m_{i, j} \in [0, 1]$. Ovaj sustav
+ima beskonačno mnogo rješenja primjerice $0.2 + 0.2 + 0.6 = 1$ i slični koji su za ovakav
+problem potpuno beskorisni, a opet zadovoljavaju skup. Ovaj algoritam će ipak uz ograničenja
+definirana ranije naći jedno od tri rješenja: $(1, 0, 0)$, $(0, 1, 0)$ ili $(0, 0, 1)$.
+
+Razlog leži u tome da ovaj algoritam pronalazi osnovno moguće rješenje (eng. \textit{Basic Feasible Solution}), rješenje problema linearnog programiranja koje ima najmanji broj vrijednosti
+koje su različite od nula. S obzirom da je ograničenje postavljeno da vrijednost maksimalno
+može biti 1, moguće je biti siguran da će algoritam vratiti smislene vrijednosti.
+
 
 Ovaj algoritam za razlučivanje ne ponaša se kao SAT postupak i to je očekivano. Glavna razlika
 između dva algoritma vidi se ukoliko algoritam nije siguran nalazi li se na nekom polju
@@ -166,22 +183,33 @@ ovog problema. Međutim, prednost simpleks algoritma nad SAT algoritmom je u vre
 
 \section{Implementacija}
 
-Program se sastoji od ploče, koja komunicira s grafičkim sučeljem i mijenja stanje igre, te od dvije strategije: \textit{CSP} odnosno simpleks metoda i \textit{SAT} aključivanje.
+Program se sastoji od ploče, koja komunicira s grafičkim sučeljem i mijenja stanje igre, te od dvije strategije: \textit{CSP} odnosno simpleks metoda i \textit{SAT} zaključivanje.
 Obje strategije naslijeđuju apstraktan razred \textit{Strategy} te sadrže metode za otvaranje polja, dohvaćanje slučajno odabranog polja, stvaranje ograničenja te metodu za izvršavanje sljedećeg koraka u rješavanju.
 
-\subsection{SAT zaključivanje}
+Aplikacija je u potpunosti implementirana u programskom jeziku Python3 pri čemu su za
+ostvarivanje projekta korištene dvije vanjske biblioteke. Za rješavanje problema linearnim
+programiranjem korištena je programska biblioteka biblioteka \textit{Cassowary} i
+\textit{SimplexSolver}. Za rješavanje 3-SAT problema korištena je programska biblioteka
+\textit{pysat} te algoritam \textit{minicard}.
 
-Za implementaciju SAT zaključivanja korištena je biblioteka \textit{pysat} i unutar nje algoritam \textit{minicard}.  
+Na slici \ref{img:UML_komunikacijski} se nalazi UML komunikacijski dijagram aplikacije.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{images/seq_diagram.png}
+    \label{img:UML_komunikacijski}
+    \caption{UML komunikacijski dijagram interakcije korisnika i aplikacije. Nakon što je
+    igra završila korisnik ima opciju ponovno pokrenuti igru ili u potpunosti zatvoriti
+    aplikaciju. Ta interakcija zbog konciznosti ovdje nije prikazana.}
+\end{figure}
 
 \subsection{Simpleks metoda}
 
-Kako bi se problem riješio linearnim programiranjem, korištena je biblioteka \textit{Cassowary} i \textit{SimplexSolver}. 
-
 U ovoj strategiji svako polje prikazano je instancom razreda \textit{Variable} kako bi ih \textit{SimplexSolver} mogao obraditi i postavljati njihove vrijednosti.
 
-Na samom početku izvođenja dodaje se ograničenje za svako polje, koje govori da vijednost tog polja mora biti između 0 i 1. Budući da \textit{SimplexSolver} radi samo sa cijelim brojevima, time smo ograničili vrijednosti polja na 0 i 1.
+Na samom početku izvođenja dodaje se ograničenje za svako polje, koje govori da vijednost tog polja moraju nalaziti u skupu $[0, 1]$.
 
-Dalje se u svakom sljedećem koraku generiraju ograničenja za svako novootvoreno polje kao što je opisano u \ref{csp}. \textit{SimplexSolver} automatski uzima u obzir sva dotadašnja ograničenja i mijenja vrijednosti varijabli kako bi sva bila zadovoljena. Sva polja čija je vrijednost postavljena na 1 označavaju se kao mine. Za sva polja koja nisu označena s 1 smatra se da ne sadrže minu te se dodaju u skup polja za otvaranje. Na kraju se uzima slučajnim odabirom jedno polje iz tog skupa ili, ako je skup prazan, jedno slučajno odabarano polje iz cijele ploče. Odabrano polje se otvara, kao i susjedna ako niti jedno od njih ne sadrži minu, i korak strategije završava.
+Dalje se u svakom sljedećem koraku generiraju ograničenja za svako novootvoreno polje kao što je opisano u poglavlju \ref{csp}. \textit{SimplexSolver} automatski uzima u obzir sva dotadašnja ograničenja i mijenja vrijednosti varijabli kako bi sva bila zadovoljena. Sva polja čija je vrijednost postavljena na 1 označavaju se kao mine. Za sva polja koja nisu označena s 1 smatra se da ne sadrže minu te se dodaju u skup polja za otvaranje. Na kraju se uzima slučajnim odabirom jedno polje iz tog skupa ili, ako je skup prazan, jedno slučajno odabarano polje iz cijele ploče. Odabrano polje se otvara, kao i susjedna ako niti jedno od njih ne sadrži minu, i korak strategije završava.
 
 \section{Zaključak}
 \end{document}
