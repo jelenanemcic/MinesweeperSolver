@@ -200,7 +200,7 @@ Na slici \ref{img:UML_komunikacijski} se nalazi UML komunikacijski dijagram apli
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=\textwidth]{images/seq_diagram.png}
+    \includegraphics[width=0.65\textwidth]{images/seq_diagram.png}
     \label{img:UML_komunikacijski}
     \caption{UML komunikacijski dijagram interakcije korisnika i aplikacije. Nakon što je
     igra završila korisnik ima opciju ponovno pokrenuti igru ili u potpunosti zatvoriti
@@ -234,8 +234,24 @@ Dalje se u svakom sljedećem koraku generiraju ograničenja za svako novootvoren
 
 Na kraju se uzima slučajnim odabirom jedno polje iz tog skupa ili, ako je skup prazan, jedno slučajno odabarano polje iz cijele ploče. Odabrano polje se otvara, kao i susjedna ako niti jedno od njih ne sadrži minu, i korak strategije završava.
 
+\subsection{Grafičko sučelje}
+
+Grafičko sučelje implementirano je koristeći programsku biblioteku Tkinter. Na slici \ref{img:GUI} prikazan je primjer grafičkog sučelja.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/gui.png}
+    \caption{Pozicija u procesu rješavanja SAT strategijom.}
+    \label{img:GUI}
+\end{figure}
+
 \section{Zaključak}
 
-% ovdje možda ovaj odlomak? :
-% Ovaj algoritam za razlučivanje ne ponaša se kao SAT postupak i to je očekivano. Glavna razlika između dva algoritma vidi se ukoliko algoritam nije siguran nalazi li se na nekom polju mina. SAT algoritam će tada pretpostaviti da se mina tamo nalazi i nikada neće otvoriti polje za koje ne može sa sigurnošću reći da nije mina. S druge strane, simpleks metoda takva polja dodaje u skup dostupnih polja te iz njega slučajnim odabirom odabire polje koje će otvoriti, što može biti i polje gdje se zapravo nalazi mina. Iz ovog razloga je SAT puno bolji algoritam za rješavanje ovog problema. Međutim, prednost simpleks algoritma nad SAT algoritmom je u vremenskoj složenosti.
+Aplikacija implementira dva različita algoritma za rješavanje igrice Minesweeper.
+Kao što je spomenuto ranije, simpleks algoritam predstavlja neku vrstu pohlepnog algoritma
+za rješavanje pozicije budući da rješava čak i pozicije koje nisu jednoznačno rješive.
+S druge strane, 3-SAT algoritam prilikom rješavanja pozicija koje nisu jednoznačne može
+odmah razriješiti polja koja su jednoznačna, a ostala polja riješiti kasnije kad
+postanu jednoznačna. Iz ovog razloga je 3-SAT puno bolji algoritam za rješavanje ovog
+problema. Međutim, prednost simpleks postupka nad 3-SAT algoritmom je u vremenskoj složenosti.
 \end{document}
