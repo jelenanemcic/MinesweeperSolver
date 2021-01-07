@@ -8,8 +8,8 @@
 \usepackage{amssymb}
 \usepackage{siunitx}
 \usepackage{graphicx}
-\usepackage[sorting=none]{biblatex}
-%\addbibresource{literatura.bib}
+\usepackage{biblatex}
+\addbibresource{literatura.bib}
 
 \numberwithin{figure}{section}
 \numberwithin{table}{section}
@@ -40,7 +40,7 @@ Igraču je u svakom trenutku igre poznato koliko je mina još na ploči. U svako
     \item označiti polje kao da se tamo nalazi mina,
     \item maknuti oznaku mine s prethodno označenog polja,
     \item otvoriti polje.
-\end{itemize} 
+\end{itemize}
 
 Označavanjem polja kao mine smanjuje se broj preostalih mina neovisno o tome nalazi li se stvarno mina na tom polju. Ukoliko je polje označeno kao mina nije ga moguće otvoriti bez da se prethodno makne oznaka da se tamo
 nalazi mina. Takva akcija označavanja je korisna ukoliko igrač sa sigurnošću zna da se na nekom polju
@@ -122,12 +122,14 @@ jednoznačno rješiv nalazi se u tablici u nastavku:
 
 S obzirom da agentu nije poznata nikakva druga informacija, agent na temelju ovog sustava ne
 može ništa zaključiti i mora pogađati.
+Detaljnija razrada postupka zaključivanja, optimizacija koje je moguće napraviti u okviru
+rješavanja ovog problema i slično dana su u \cite{berkeley08, berkeley09}.
 
 \subsubsection{Zaključivanje rješavanjem SAT problema} \label{sat}
 Prvi korak u zaključivanju rješavanjem SAT problema jest svođenje
 problema na oblik konjugirane normalne forme (eng. \textit{conjunctive normal form}), u nastavku CNF.
 
-Gledajući primjer stanja svijeta iz tablice \ref{table:state1} izvodimo za njega klauzule. 
+Gledajući primjer stanja svijeta iz tablice \ref{table:state1} izvodimo za njega klauzule.
 S obzirom na to da se oko polja $m_{2, 1}$ nalazi jedna mina, jedno od susjednih polja $m_{1,1}$ i $m_{1, 2}$ mora sadržavati minu. Isto tako, točno jedno od susjednih polja ne smije biti mina. Postavljamo klauzule:
 \begin{equation*}
     (m_{1, 1} \vee m_{1, 2}) \wedge (\neg m_{1, 1} \vee \neg m_{1, 2})
@@ -150,7 +152,7 @@ proširuje se s $\neg m_{1, 2}$ te je potrebno pokazati da je $(\Gamma \wedge \n
 nezadovoljivo. Ukoliko je formula nezadovoljiva, agent može biti siguran da se tamo nalazi mina te proširiti
 bazu znanja s tom informacijom kao i označiti to polje kao opasno.
 
-Na isti način, budući da je $(\Gamma \wedge m_{1, 1})$ nezadovoljiva formula, agent može biti siguran da se na tom polju ne nalazi mina i otvoriti ga. 
+Na isti način, budući da je $(\Gamma \wedge m_{1, 1})$ nezadovoljiva formula, agent može biti siguran da se na tom polju ne nalazi mina i otvoriti ga.
 
 
 \subsubsection{Zaključivanje simpleks metodom} \label{simplex}
@@ -192,9 +194,9 @@ Obje strategije naslijeđuju apstraktan razred \textit{Strategy} te sadrže meto
 
 Aplikacija je u potpunosti implementirana u programskom jeziku Python3 pri čemu su za
 ostvarivanje projekta korištene dvije vanjske biblioteke. Za rješavanje problema linearnim
-programiranjem korištena je programska biblioteka \textit{Cassowary} i njen razred
+programiranjem korištena je programska biblioteka \textit{Cassowary}\cite{badros2001cassowary} i njen razred
 \textit{SimplexSolver}. Za rješavanje 3-SAT problema korištena je programska biblioteka
-\textit{pysat} te algoritam \textit{minicard}.
+\textit{pysat}\cite{ignatiev2018pysat} te algoritam \textit{minicard}\cite{liffiton2012cardinality}.
 
 Na slici \ref{img:UML_komunikacijski} se nalazi UML komunikacijski dijagram aplikacije.
 
@@ -209,10 +211,10 @@ Na slici \ref{img:UML_komunikacijski} se nalazi UML komunikacijski dijagram apli
 
 \subsection{SAT zaključivanje}
 
-Algoritam SAT zaključivanja implicitno radi sa cijelim brojevima koji mogu biti pozitivni ili negativni, gdje pozitivan broj predstavlja istinitu vrijednost, a negativan broj lažnu. 
-Ova strategija zato prikazuje svako polje ploče preko njegovog rednog broja te mu prilikom zaključivanja mijenja predznak. Sama vrijednost polja označava s 0 ili 1, pri čemu broj 1 označava da polje sadrži minu. 
+Algoritam SAT zaključivanja implicitno radi sa cijelim brojevima koji mogu biti pozitivni ili negativni, gdje pozitivan broj predstavlja istinitu vrijednost, a negativan broj lažnu.
+Ova strategija zato prikazuje svako polje ploče preko njegovog rednog broja te mu prilikom zaključivanja mijenja predznak. Sama vrijednost polja označava s 0 ili 1, pri čemu broj 1 označava da polje sadrži minu.
 
-Na početku, algoritam dobiva ograničenje koje govori koliko se ukupno mina nalazi na ploči. 
+Na početku, algoritam dobiva ograničenje koje govori koliko se ukupno mina nalazi na ploči.
 U svakom se koraku za svako novootvoreno polje generira ograničenje kao što je objašnjeno u
 poglavlju \ref{sat} i dodaje u skup ograničenja. Zatim se za svako polje koje u tom trenutku
 susjedno nekom otvorenom polju provjerava može li se sa sigurnošću reći da polje sadrži minu ili da
@@ -229,8 +231,8 @@ U ovoj strategiji svako je polje prikazano instancom razreda \textit{Variable} k
 
 Na samom početku izvođenja dodaje se ograničenje za svako polje, koje govori da vijednost tog polja mora nalaziti u skupu $[0, 1]$. Također, dodaje se ograničenje o ukupnom broju mina na ploči.
 
-Dalje se u svakom sljedećem koraku generiraju ograničenja za svako novootvoreno polje na način opisan u poglavlju \ref{simplex}. 
-\textit{SimplexSolver} automatski uzima u obzir sva dotadašnja ograničenja i mijenja vrijednosti varijabli kako bi sva ograničenja bila zadovoljena. Sva polja čija je vrijednost postavljena na 1 označavaju se kao mine. Za sva polja koja nisu označena s 1 smatra se da ne sadrže minu te se dodaju u skup polja za otvaranje. 
+Dalje se u svakom sljedećem koraku generiraju ograničenja za svako novootvoreno polje na način opisan u poglavlju \ref{simplex}.
+\textit{SimplexSolver} automatski uzima u obzir sva dotadašnja ograničenja i mijenja vrijednosti varijabli kako bi sva ograničenja bila zadovoljena. Sva polja čija je vrijednost postavljena na 1 označavaju se kao mine. Za sva polja koja nisu označena s 1 smatra se da ne sadrže minu te se dodaju u skup polja za otvaranje.
 
 Na kraju se uzima slučajnim odabirom jedno polje iz tog skupa ili, ako je skup prazan, jedno slučajno odabarano polje iz cijele ploče. Odabrano polje se otvara, kao i susjedna ako niti jedno od njih ne sadrži minu, i korak strategije završava.
 
@@ -245,6 +247,35 @@ Grafičko sučelje implementirano je koristeći programsku biblioteku Tkinter. N
     \label{img:GUI}
 \end{figure}
 
+\subsection{Korištenje aplikacije}
+
+U nastavku će biti opisano korištenje aplikacije u okviru operacijskog sustava GNU/Linux
+koristeći upravljač paketima \texttt{apt}. Prije svega je naredbom
+\begin{verbatim}
+$ sudo apt update && sudo apt install python3
+\end{verbatim}
+potrebno preuzeti Python3 interpreter.
+
+Nakon što je Python3 interpreter preuzet poželjno je kreirati virtualnu okolinu te u njoj
+instralirati potrebne pakete:
+\begin{verbatim}
+$ python3 -m venv minesweeper_solver
+$ cd minesweeper_solver
+$ source bin/activate
+$ python3 -m pip install python-sat cassowary
+\end{verbatim}
+
+U ovom trenutku su svi vanjski paketi preuzeti i moguće je pokrenuti aplikaciju
+\begin{verbatim}
+$ python3 driver.py
+\end{verbatim}
+
+Nakon završetka korištenja, poželjno je izaći iz virtualnog okruženja naredbom
+\begin{verbatim}
+$ deactivate
+\end{verbatim}
+
+
 \section{Zaključak}
 
 Aplikacija implementira dva različita algoritma za rješavanje igrice Minesweeper.
@@ -254,4 +285,7 @@ S druge strane, 3-SAT algoritam prilikom rješavanja pozicija koje nisu jednozna
 odmah razriješiti polja koja su jednoznačna, a ostala polja riješiti kasnije kad
 postanu jednoznačna. Iz ovog razloga je 3-SAT puno bolji algoritam za rješavanje ovog
 problema. Međutim, prednost simpleks postupka nad 3-SAT algoritmom je u vremenskoj složenosti.
+
+\printbibliography
+
 \end{document}
