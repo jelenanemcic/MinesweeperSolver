@@ -122,6 +122,7 @@ jednoznačno rješiv nalazi se u tablici u nastavku:
 
 S obzirom da agentu nije poznata nikakva druga informacija, agent na temelju ovog sustava ne
 može ništa zaključiti i mora pogađati.
+
 Detaljnija razrada postupka zaključivanja, optimizacija koje je moguće napraviti u okviru
 rješavanja ovog problema i slično dana su u \cite{berkeley08, berkeley09}.
 
@@ -181,11 +182,9 @@ definirana ranije naći jedno od tri rješenja: $(1, 0, 0)$, $(0, 1, 0)$ ili $(0
 Razlog leži u tome da ovaj algoritam pronalazi osnovno moguće rješenje (eng. \textit{Basic Feasible Solution}), a to je rješenje problema linearnog programiranja koje ima najmanji broj vrijednosti
 koje su različite od nula. S obzirom da je ograničenje postavljeno da vrijednost može biti maksimalno 1, moguće je biti siguran da će algoritam vratiti smislene vrijednosti.
 
-
 Ovaj algoritam za razlučivanje ne ponaša se kao SAT postupak i to je očekivano. Glavna razlika
 između dva algoritma vidi se ukoliko algoritam nije siguran nalazi li se na nekom polju
-mina. SAT algoritam će tada pretpostaviti da se mina tamo nalazi i nikada neće otvoriti polje za koje ne može sa sigurnošću reći da nije mina. S druge strane, simpleks metoda takva polja dodaje u skup dostupnih polja te iz njega slučajnim odabirom odabire polje koje će otvoriti, što može biti i polje gdje se zapravo nalazi mina. Iz ovog razloga je SAT puno bolji algoritam za rješavanje
-ovog problema. Međutim, prednost simpleks algoritma nad SAT algoritmom je u vremenskoj složenosti.
+mina. SAT algoritam će tada pretpostaviti da se mina tamo nalazi i nikada neće otvoriti polje za koje ne može sa sigurnošću reći da nije mina. S druge strane, simpleks metoda takva polja dodaje u skup dostupnih polja te iz njega slučajnim odabirom odabire polje koje će otvoriti, što može biti i polje gdje se zapravo nalazi mina.
 
 \section{Implementacija}
 
@@ -195,7 +194,7 @@ Obje strategije naslijeđuju apstraktan razred \textit{Strategy} te sadrže meto
 Aplikacija je u potpunosti implementirana u programskom jeziku Python3 pri čemu su za
 ostvarivanje projekta korištene dvije vanjske biblioteke. Za rješavanje problema linearnim
 programiranjem korištena je programska biblioteka \textit{Cassowary}\cite{badros2001cassowary} i njen razred
-\textit{SimplexSolver}. Za rješavanje 3-SAT problema korištena je programska biblioteka
+\textit{SimplexSolver}. Za rješavanje SAT problema korištena je programska biblioteka
 \textit{pysat}\cite{ignatiev2018pysat} te algoritam \textit{minicard}\cite{liffiton2012cardinality}.
 
 Na slici \ref{img:UML_komunikacijski} se nalazi UML komunikacijski dijagram aplikacije.
@@ -238,7 +237,7 @@ Na kraju se uzima slučajnim odabirom jedno polje iz tog skupa ili, ako je skup 
 
 \subsection{Grafičko sučelje}
 
-Grafičko sučelje implementirano je koristeći programsku biblioteku Tkinter. Na slici \ref{img:GUI} prikazan je primjer grafičkog sučelja.
+Grafičko sučelje implementirano je koristeći programsku biblioteku \textit{Tkinter}. Na slici \ref{img:GUI} prikazan je primjer grafičkog sučelja.
 
 \begin{figure}[ht]
     \centering
@@ -265,12 +264,12 @@ $ source bin/activate
 $ python3 -m pip install python-sat cassowary
 \end{verbatim}
 
-U ovom trenutku su svi vanjski paketi preuzeti i moguće je pokrenuti aplikaciju
+U ovom trenutku su svi vanjski paketi preuzeti i moguće je pokrenuti aplikaciju naredbom:
 \begin{verbatim}
 $ python3 driver.py
 \end{verbatim}
 
-Nakon završetka korištenja, poželjno je izaći iz virtualnog okruženja naredbom
+Nakon završetka korištenja, poželjno je izaći iz virtualnog okruženja naredbom:
 \begin{verbatim}
 $ deactivate
 \end{verbatim}
@@ -281,10 +280,10 @@ $ deactivate
 Aplikacija implementira dva različita algoritma za rješavanje igrice Minesweeper.
 Kao što je spomenuto ranije, simpleks algoritam predstavlja neku vrstu pohlepnog algoritma
 za rješavanje pozicije budući da rješava čak i pozicije koje nisu jednoznačno rješive.
-S druge strane, 3-SAT algoritam prilikom rješavanja pozicija koje nisu jednoznačne može
+S druge strane, SAT algoritam prilikom rješavanja pozicija koje nisu jednoznačne može
 odmah razriješiti polja koja su jednoznačna, a ostala polja riješiti kasnije kad
-postanu jednoznačna. Iz ovog razloga je 3-SAT puno bolji algoritam za rješavanje ovog
-problema. Međutim, prednost simpleks postupka nad 3-SAT algoritmom je u vremenskoj složenosti.
+postanu jednoznačna. Iz ovog razloga je SAT puno bolji algoritam za rješavanje ovog
+problema. Međutim, prednost simpleks postupka nad SAT algoritmom je u vremenskoj složenosti.
 
 \printbibliography
 
