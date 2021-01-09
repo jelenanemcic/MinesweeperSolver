@@ -24,7 +24,7 @@
     \vfill
 	{\Large\itshape Projekt kolegija Ekspertni sustavi \par}
 	\vspace{0.5cm}
-	{\huge\bfseries Rješavanje i analiza rješavanja igrice Minesweeper\par}
+	{\huge\bfseries Rješavanje i analiza rješavanja igre Minesweeper\par}
 	\vspace{0.5cm}
 	{\Large\itshape Darko Janeković, Jelena Nemčić \par}
 	\vfill
@@ -52,7 +52,7 @@ polja sve dok se ne otvori neko polje koje u susjedstvu ima minu. Otvaranje polj
 se nalazi $n$ mina ispisat će na ploču brojku $n$. Igrač je izgubio ako je otvorio polje s minom, dok otvaranje zadnjeg polja koje nije mina
 označava pobjedu.
 
-U okviru ovog projekta bit će analizirane dvije taktike za rješavanje igrice Minesweeper pri čemu obje
+U okviru ovog projekta bit će analizirane dvije taktike za rješavanje igre Minesweeper pri čemu obje
 taktike svode problem na programiranje s ograničenjima (engl. \textit{Constraint Programming}),
 ali se postupak rješavanja razlikuje.
 
@@ -157,8 +157,7 @@ Na isti način, budući da je $(\Gamma \wedge m_{1, 1})$ nezadovoljiva formula, 
 
 
 \subsubsection{Zaključivanje simpleks metodom} \label{simplex}
-Simpleks algoritam je metoda rješavanja problema u linearnom programiranju.
-Ovaj postupak može se
+Simpleks algoritam je metoda rješavanja problema u linearnom programiranju. Ovaj postupak može se
 tumačiti i kao pohlepna inačica SAT postupka.
 
 Ulaz u algoritam je niz jednadžbi i nejednadžbi i ciljna funkcija koju je potrebno minimizirati ili maksimizirani tako da su sve jednadžbe i nejednadžbe zadovoljene. Također umjesto jedne ciljne funkcije, ograničenja su postavljena na svaku varijablu tako da se njena vrijednost nalazi u skupu $[0, 1]$. Cilj je pronaći odgovarajuće vrijednosti svih varijabli tako da je sustav zadovoljiv.
@@ -278,7 +277,7 @@ $ deactivate
 
 \section{Zaključak}
 
-Aplikacija implementira dva različita algoritma za rješavanje igrice Minesweeper.
+Aplikacija implementira dva različita algoritma za rješavanje igre Minesweeper.
 Kao što je spomenuto ranije, simpleks algoritam predstavlja neku vrstu pohlepnog algoritma
 za rješavanje pozicije budući da rješava čak i pozicije koje nisu jednoznačno rješive.
 S druge strane, SAT algoritam prilikom rješavanja pozicija koje nisu jednoznačne može
