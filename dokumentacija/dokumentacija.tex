@@ -24,7 +24,7 @@
     \vfill
 	{\Large\itshape Projekt kolegija Ekspertni sustavi \par}
 	\vspace{0.5cm}
-	{\huge\bfseries Rješavanje i analiza rješavanja igre Minesweeper\par}
+	{\huge\bfseries Rješavanje i analiza rješavanja igrice Minesweeper\par}
 	\vspace{0.5cm}
 	{\Large\itshape Darko Janeković, Jelena Nemčić \par}
 	\vfill
@@ -52,7 +52,7 @@ polja sve dok se ne otvori neko polje koje u susjedstvu ima minu. Otvaranje polj
 se nalazi $n$ mina ispisat će na ploču brojku $n$. Igrač je izgubio ako je otvorio polje s minom, dok otvaranje zadnjeg polja koje nije mina
 označava pobjedu.
 
-U okviru ovog projekta bit će analizirane dvije taktike za rješavanje igre Minesweeper pri čemu obje
+U okviru ovog projekta bit će analizirane dvije taktike za rješavanje igrice Minesweeper pri čemu obje
 taktike svode problem na programiranje s ograničenjima (engl. \textit{Constraint Programming}),
 ali se postupak rješavanja razlikuje.
 
@@ -157,7 +157,8 @@ Na isti način, budući da je $(\Gamma \wedge m_{1, 1})$ nezadovoljiva formula, 
 
 
 \subsubsection{Zaključivanje simpleks metodom} \label{simplex}
-Simpleks algoritam je metoda rješavanja problema u linearnom programiranju. Ovaj postupak može se
+Simpleks algoritam je metoda rješavanja problema u linearnom programiranju.
+Ovaj postupak može se
 tumačiti i kao pohlepna inačica SAT postupka.
 
 Ulaz u algoritam je niz jednadžbi i nejednadžbi i ciljna funkcija koju je potrebno minimizirati ili maksimizirani tako da su sve jednadžbe i nejednadžbe zadovoljene. Također umjesto jedne ciljne funkcije, ograničenja su postavljena na svaku varijablu tako da se njena vrijednost nalazi u skupu $[0, 1]$. Cilj je pronaći odgovarajuće vrijednosti svih varijabli tako da je sustav zadovoljiv.
@@ -219,7 +220,7 @@ poglavlju \ref{sat} i dodaje u skup ograničenja. Zatim se za svako polje koje u
 susjedno nekom otvorenom polju provjerava može li se sa sigurnošću reći da polje sadrži minu ili da
 je prazno. Prvo se pretpostavi da je polje sigurno i ta se prepostavka dodaje u trenutnu bazu
 znanja. Ako takav sustav nije zadovoljiv, sigurni smo da se na tome polju nalazi mina i polje se
-označava. U suprotnom, pretpostavljamo da polje sadrži minu i gledamo zadovoljivost sustava. Ako on
+označava. U suprotnom, pretpostavlja se da polje sadrži minu te se gleda zadovoljivost sustava. Ako on
 nije zadovoljiv, polje je sigurno i dodaje se u skup polja za otvaranje.
 
 Naposljetku se uzima jedno polje iz skupa sigurnih polja i otvara se. Također se otvaraju i sva susjedna polja ako niti jedno ne sadrži minu. Ako je skup sigurnih polja prazan, niti za jedno polje ne možemo sa sigurnošću reći da ne sadrži minu. Tada se otvara jedno slučajno odabrano neoznačeno polje s ploče.
@@ -249,7 +250,7 @@ Grafičko sučelje implementirano je koristeći programsku biblioteku \textit{Tk
 \subsection{Korištenje aplikacije}
 
 U nastavku će biti opisano korištenje aplikacije u okviru operacijskog sustava GNU/Linux
-koristeći upravljač paketima \texttt{apt}. Prije svega je naredbom
+koristeći upravljač paketima \texttt{apt}. Prije svega je naredbom:
 \begin{verbatim}
 $ sudo apt update && sudo apt install python3
 \end{verbatim}
@@ -277,12 +278,12 @@ $ deactivate
 
 \section{Zaključak}
 
-Aplikacija implementira dva različita algoritma za rješavanje igre Minesweeper.
+Aplikacija implementira dva različita algoritma za rješavanje igrice Minesweeper.
 Kao što je spomenuto ranije, simpleks algoritam predstavlja neku vrstu pohlepnog algoritma
 za rješavanje pozicije budući da rješava čak i pozicije koje nisu jednoznačno rješive.
 S druge strane, SAT algoritam prilikom rješavanja pozicija koje nisu jednoznačne može
 odmah razriješiti polja koja su jednoznačna, a ostala polja riješiti kasnije kad
-postanu jednoznačna. Iz ovog razloga je SAT puno bolji algoritam za rješavanje ovog
+postanu jednoznačna. Iz ovog je razloga SAT puno bolji algoritam za rješavanje ovog
 problema. Međutim, prednost simpleks postupka nad SAT algoritmom je u vremenskoj složenosti.
 
 \printbibliography
