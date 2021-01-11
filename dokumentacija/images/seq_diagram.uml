@@ -1,0 +1,32 @@
+@startuml
+actor Korisnik
+participant Agent
+Korisnik -> Agent: python3 driver.py
+Agent -> Agent: inicijalizacija ploče
+
+alt odabir SAT strategije
+    Korisnik -> Agent: klik na SAT strategy gumb
+else odabir CSP strategije
+    Korisnik -> Agent: klik na CSP strategy gumb
+end
+
+loop dok god traje igra
+    Korisnik -> Agent: klik na "Next step" gumb
+    Agent -> Agent: označi polja gdje su mine
+    alt postoji polje u listi slobodnih
+        Agent -> Agent: otvori polje iz liste slobodnih
+    else
+        Agent -> Agent: otvori slučajno polje
+    end
+    alt otvoreno slobodno polje
+        alt otvorena su sva slobodna polja
+            Agent -> Korisnik: Pobjeda!
+        else ima još slobodnih polja
+            Agent -> Agent: ažuriraj ploču i stanje svijeta
+        end
+    else otvorena mina
+        Agent -> Korisnik: Izgubljena igra
+    end
+end
+
+@enduml

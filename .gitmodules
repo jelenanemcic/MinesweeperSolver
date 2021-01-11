@@ -1,0 +1,3 @@
+[submodule "dokumentacija/mtheme"]
+	path = dokumentacija/mtheme
+	url = https://github.com/matze/mtheme.git

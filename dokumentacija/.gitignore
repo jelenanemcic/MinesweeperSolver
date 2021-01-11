@@ -1,0 +1,15 @@
+*.sty
+*.snm
+*.nav
+*.toc
+*.bbl
+*.bcf
+*.blg
+*.dvi
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.pdf
+*.run.xml
+*.aux

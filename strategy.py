@@ -33,10 +33,6 @@ class CSP(Strategy):
         self.vars = [[Variable("a[{}][{}]".format(j, i)) for i in range(self.game.board_dim)]
                      for j in range(self.game.board_dim)]
 
-        self.solver.add_constraint(self.game.num_mines == sum(self.vars[i][j]
-                                                              for i in range(0, self.game.board_dim) for j in
-                                                              range(0, self.game.board_dim)))
-
     def get_random_field(self):
         while True:
             i = randint(0, self.game.board_dim - 1)
@@ -82,6 +78,10 @@ class CSP(Strategy):
                                      for f in adjacent_fields if f.covered)
 
     def first_step(self, first_field=None):
+        self.solver.add_constraint(self.game.num_mines == sum(self.vars[i][j]
+                                                              for i in range(0, self.game.board_dim) for j in
+                                                              range(0, self.game.board_dim)))
+
         for (row_index, row) in enumerate(self.game.board):
             for (col_index, var) in enumerate(row):
                 self.solver.add_constraint(self.vars[row_index][col_index] >= 0)
@@ -129,12 +129,8 @@ class SAT(Strategy):
         self.current_adjacent_fields = []
         self.newly_opened = []
         self.mines = []
-        self.vars = [[0 for i in range(self.game.board_dim)]
-                     for j in range(self.game.board_dim)]
-
-        self.solver.append_formula(
-            CardEnc.equals(lits=list(range(1, self.game.board_dim ** 2 + 1)), bound=self.game.num_mines,
-                           encoding=EncType.native))
+        self.vars = [[0 for _ in range(self.game.board_dim)]
+                     for _ in range(self.game.board_dim)]
 
     def get_random_field(self):
         while True:
@@ -181,6 +177,9 @@ class SAT(Strategy):
         return CardEnc.equals(lits=literals, bound=adjacent_mines, encoding=EncType.native)
 
     def first_step(self, first_field=None):
+        self.solver.append_formula(
+            CardEnc.equals(lits=list(range(1, self.game.board_dim ** 2 + 1)), bound=self.game.num_mines,
+                           encoding=EncType.native))
 
         if first_field:
             row, column = first_field
