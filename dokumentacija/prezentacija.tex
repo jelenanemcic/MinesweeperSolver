@@ -122,15 +122,19 @@
             \end{tabular}
         \end{table}
 
+         \visible<1->{Metoda rješavanja problema u lineranom programiranju.}
+         
+        \visible<3->{Simpleks algoritam pronalazi osnovno zadovoljivo rješenje (BFS).}
+
+        \visible<2->{
         \begin{gather*}
             1 \ge m_{i, i} \ge 0 \\
             m_{1, 1} + m_{1, 2} = 1 \\
             m_{1, 1} + m_{1, 2}+ m_{1, 3} = 1 \\
             m_{1, 2} + m_{1, 3} = 1
-        \end{gather*}
+        \end{gather*}}
 
-        \visible<2->{Simpleks algoritam pronalazi osnovno zadovoljivo rješenje (BFS).}
-    \end{frame}
+        \end{frame}
     
         \begin{frame}[t]
         \frametitle{Implementacija}
@@ -141,8 +145,24 @@
         \end{figure}
 
       \begin{itemize}
+            \item<2-> Ploča koja sadrži polja i komunicira s grafičkim sučeljem
+            \item<3-> Strategija SAT zaključivanja $\rightarrow$ biblioteka \textit{Cassowary}
+            \item<4-> Simpleks metoda $\rightarrow$ biblioteka \textit{PySAT}
+        \end{itemize}
+    \end{frame}
+    
+      \begin{frame}[t]
+        \frametitle{Implementacija}
+        
+         \begin{figure}
+            \centering
+            \visible<1->{\includegraphics[width=0.4\textwidth]{images/gui.png}}
+        \end{figure}
+
+      \begin{itemize}
             \item<2-> Mogućnost odabira strategije
             \item<3-> Praćenje igre potez po potez
+            \item<4-> Brojač preostalih mina i otvorenih polja
         \end{itemize}
     \end{frame}
 \end{document}
