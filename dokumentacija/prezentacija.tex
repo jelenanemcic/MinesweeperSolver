@@ -93,20 +93,14 @@
         \end{table}
 
         \visible<1->{Svođenje problema na oblik konjugirane normalne forme (CNF).}
+        \begin{multline*}
+            \onslide<2->{(m_{1, 1} \vee m_{1, 2}) \wedge (\neg m_{1, 1} \vee \neg m_{1, 2}) \\}
+            \onslide<3->{(m_{1, 1} \vee m_{1, 2} \vee m_{1, 3}) \wedge (\neg m_{1, 1} \vee \neg m_{1, 2}) \wedge \nonumber (\neg m_{1, 2} \vee \neg m_{1, 3}) \wedge (\neg m_{1, 3} \vee \neg m_{1, 1}) \\}
+            \onslide<4->{(m_{1, 2} \vee m_{1, 3}) \wedge (\neg m_{1, 2} \vee \neg m_{1, 3}) \\}
+        \end{multline*}
+
         \visible<5->{Zaključivanje teoremom dedukcije: $(\Gamma \wedge \neg m_{1, 2})$}
 
-        \visible<2->{
-            \begin{equation*}
-                (m_{1, 1} \vee m_{1, 2}) \wedge (\neg m_{1, 1} \vee \neg m_{1, 2})
-            \end{equation*}}
-        \visible<3->{
-            \begin{equation*}
-                (m_{1, 1} \vee m_{1, 2} \vee m_{1, 3}) \wedge (\neg m_{1, 1} \vee \neg m_{1, 2}) \wedge \nonumber (\neg m_{1, 2} \vee \neg m_{1, 3}) \wedge (\neg m_{1, 3} \vee \neg m_{1, 1})
-            \end{equation*}}
-        \visible<4->{
-            \begin{equation*}
-                (m_{1, 2} \vee m_{1, 3}) \wedge (\neg m_{1, 2} \vee \neg m_{1, 3})
-            \end{equation*}}
     \end{frame}
 
     \begin{frame}[t]
@@ -122,7 +116,7 @@
             \end{tabular}
         \end{table}
 
-         \visible<1->{Metoda rješavanja problema u lineranom programiranju.}
+        \visible<1->{Metoda rješavanja problema u lineranom programiranju.}
          
         \visible<3->{Simpleks algoritam pronalazi osnovno zadovoljivo rješenje (BFS).}
 
@@ -133,9 +127,8 @@
             m_{1, 1} + m_{1, 2}+ m_{1, 3} = 1 \\
             m_{1, 2} + m_{1, 3} = 1
         \end{gather*}}
+    \end{frame}
 
-        \end{frame}
-    
         \begin{frame}[t]
         \frametitle{Implementacija}
         
@@ -164,5 +157,9 @@
             \item<3-> Praćenje igre potez po potez
             \item<4-> Brojač preostalih mina i otvorenih polja
         \end{itemize}
+    \end{frame}
+
+    \begin{frame}[standout]
+        Demonstracija i hvala na pažnji!
     \end{frame}
 \end{document}

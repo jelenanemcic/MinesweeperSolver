@@ -41,6 +41,10 @@ class Minesweeper:
         return self.board[math.floor((id - 1) / self.board_dim)][(id - 1) % self.board_dim]
 
     def _right_click(self, event):
+        """
+        Handle right click on the grid
+        If the field is marked as mine, we are removing the mark and vice versa.
+        """
         grid_info = event.widget.grid_info()
         column, row = grid_info["column"], grid_info["row"]
 
@@ -50,6 +54,11 @@ class Minesweeper:
             self.mark_field_dangerous(self.board[row][column])
 
     def _left_click(self, event):
+        """
+        Handle left click on the grid.
+
+        If the field we clicked is already opened, do nothing since it makes no sense.
+        """
         grid_info = event.widget.grid_info()
         column, row = grid_info["column"], grid_info["row"]
 
@@ -57,6 +66,9 @@ class Minesweeper:
             self.open_field(self.board[row][column])
 
     def setup_gui(self):
+        """
+        Create and setup objects needed for GUI.
+        """
         self.root = tk.Tk()
         self.root.title("Minesweeper solver")
 
@@ -123,6 +135,9 @@ class Minesweeper:
         self._update()
 
     def num_closed(self):
+        """
+        Return number of closed fields on the board
+        """
         return self.board_dim ** 2 - self.opened
 
     def get_adjacent_fields(self, row_index, col_index):
@@ -137,6 +152,9 @@ class Minesweeper:
         return adjacent_fields
 
     def get_adjacent_mines(self, row_index, col_index):
+        """
+        Get number of mines in the adjacent fields.
+        """
         return sum(f.is_mine for f in self.get_adjacent_fields(row_index, col_index))
 
     def _update(self):
@@ -150,6 +168,9 @@ class Minesweeper:
                     field.adjacent_mines = self.get_adjacent_mines(row_index, col_index)
 
     def mark_field_dangerous(self, field):
+        """
+        Mark field as dangerous and add it to the marked list
+        """
         if field not in self.marked:
             field.marked_mine = True
             self.marked.append(field)
@@ -159,6 +180,9 @@ class Minesweeper:
             self.labels["mines"].config(text="Mines: {}".format(self.num_mines - len(self.marked)))
 
     def mark_field_safe(self, field):
+        """
+        Remove mark on the field and remove it from marked list
+        """
         if field in self.marked:
             field.marked_mine = False
             self.marked.remove(field)
@@ -169,9 +193,9 @@ class Minesweeper:
 
     def open_field(self, field):
         """
-        Open field and check.
+        Open field and check if there is a mine.
 
-        If there is a bomb this function will raise Explosion and callee should handle that.
+        If there is a bomb this function will create new windows with Game over message.
         If opened field has no adjacent mines we will open new all of his covered adjacent
         fields.
 
@@ -239,11 +263,11 @@ class Minesweeper:
 
         return [field]
 
-    def run_strategy(self, strategy, first_field=None):
-        strategy.solve(first_field)
-
     def _run_CSP(self, event):
-        # disable SAT button if CSP is clicked
+        """
+        CSP button is clicked, we are solving with CSP strategy.
+        We will also disable SAT button since we clicked CSP.
+        """
         SAT_button = event.widget.winfo_toplevel().nametowidget("strategy_grid.sat_button")
         SAT_button.config(state=tk.DISABLED)
         self.enable_buttons(event)
@@ -255,7 +279,10 @@ class Minesweeper:
         self.strategy.first_step(first_field=first_field)
 
     def _run_SAT(self, event):
-        # disable CSP button if SAT is clicked
+        """
+        SAT button is clicked, we are solving with SAT strategy.
+        We will also disable CSP button since we clicked SAT.
+        """
         CSP_button = event.widget.winfo_toplevel().nametowidget("strategy_grid.csp_button")
         CSP_button.config(state=tk.DISABLED)
         self.enable_buttons(event)
@@ -267,6 +294,9 @@ class Minesweeper:
         self.strategy.first_step(first_field=first_field)
 
     def _next_step(self, event):
+        """
+        Run one step of chosen strategy
+        """
         self.strategy.step()
 
     def enable_buttons(self, event):
@@ -281,6 +311,9 @@ class Minesweeper:
                 button.config(state=tk.NORMAL)
 
     def restart(self):
+        """
+        Restart the game by reseting all the widgets in the root window.
+        """
         self.root.destroy()
         self.labels = {}
         self.marked = []
